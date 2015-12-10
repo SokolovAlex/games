@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.Optimization;
+using System.Web.Optimization.React;
 
 namespace games.web
 {
@@ -41,6 +42,24 @@ namespace games.web
             bundles.Add(new StyleBundle("~/Content/css").Include(
                  "~/Content/bootstrap.css",
                  "~/Content/Site.css"));
+
+
+            // In BundleConfig.cs
+            bundles.Add(new System.Web.Optimization.React.BabelBundle("~/bundles/main").Include(
+                // Add your JSX files here
+                "~/Scripts/react/HelloWorld.jsx"
+            ));
+
+            // In BundleConfig.cs
+            bundles.Add(new Bundle("~/bundles/main", new IBundleTransform[]
+            {
+                // This works the same as BabelBundle (transform then minify) but you could
+                //add your own transforms as well.
+                new BabelTransform()
+            }).Include(
+                "~/Content/HelloWorld.react.jsx"
+            ));
+
         }
     }
 }
