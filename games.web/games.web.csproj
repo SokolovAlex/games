@@ -291,6 +291,10 @@
     <Compile Include="Areas\HelpPage\SampleGeneration\SampleDirection.cs" />
     <Compile Include="Areas\HelpPage\SampleGeneration\TextSample.cs" />
     <Compile Include="Areas\HelpPage\XmlDocumentationProvider.cs" />
+    <Compile Include="Areas\Memory\Controllers\MemoryController.cs" />
+    <Compile Include="Areas\Memory\MemoryAreaRegistration.cs" />
+    <Compile Include="Areas\PixiGames\Controllers\GamesController.cs" />
+    <Compile Include="Areas\PixiGames\PixiGamesAreaRegistration.cs" />
     <Compile Include="Controllers\AccountController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\ManageController.cs" />
@@ -310,6 +314,15 @@
   <ItemGroup>
     <Content Include="Areas\HelpPage\HelpPage.css" />
     <Content Include="Areas\HelpPage\Views\_ViewStart.cshtml" />
+    <Content Include="Areas\Memory\Views\web.config" />
+    <Content Include="Areas\Memory\Views\_ViewStart.cshtml" />
+    <Content Include="Areas\Memory\Views\Memory\Page.cshtml" />
+    <Content Include="Areas\PixiGames\images\t44_body.png" />
+    <Content Include="Areas\PixiGames\images\t44_head.png" />
+    <Content Include="Areas\PixiGames\Scripts\Tanki\start.js" />
+    <Content Include="Areas\PixiGames\Views\web.config" />
+    <Content Include="Areas\PixiGames\Views\Games\GamesList.cshtml" />
+    <Content Include="Areas\PixiGames\Views\Games\Tanki.cshtml" />
     <None Include="ClearScript.V8\ClearScriptV8-32.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -329,7 +342,7 @@
     <Content Include="favicon.ico" />
     <Content Include="fonts\glyphicons-halflings-regular.svg" />
     <Content Include="Global.asax" />
-    <Content Include="readme.txt" />
+    <Content Include="gulpfile.js" />
     <Content Include="Scripts\ai.0.15.0-build58334.js" />
     <Content Include="Scripts\ai.0.15.0-build58334.min.js" />
     <Content Include="Scripts\bootstrap.js" />
@@ -356,6 +369,7 @@
     <Content Include="ApplicationInsights.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="package.json" />
     <None Include="Scripts\jquery-1.10.2.intellisense.js" />
     <Content Include="Scripts\jquery-1.10.2.js" />
     <Content Include="Scripts\jquery-1.10.2.min.js" />
@@ -413,6 +427,12 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
+    <Folder Include="Areas\Memory\Models\" />
+    <Folder Include="Areas\Memory\Views\Shared\" />
+    <Folder Include="Areas\PixiGames\Models\" />
+    <Folder Include="Areas\PixiGames\Views\Shared\" />
+    <Folder Include="build_gulp\css\" />
+    <Folder Include="build_gulp\js\" />
     <Folder Include="Views\NewFolder1\" />
   </ItemGroup>
   <ItemGroup>

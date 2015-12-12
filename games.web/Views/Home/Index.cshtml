@@ -1,10 +1,10 @@
 ﻿@section SPAViews {
     @Html.Partial("_Home")
 }
+
+
 @section Scripts{
     <script type="text/javascript">
-
-            console.log("!!!");
             var renderer = new PIXI.CanvasRenderer(window.innerWidth, window.innerHeight);
 
             $('#zombie')[0].appendChild(renderer.view);
@@ -17,10 +17,11 @@
 
             stage.addChild(zombie);
 
-            function draw() { renderer.render(stage); requestAnimationFrame(draw); }
+            function draw() {
+                renderer.render(stage);
+                requestAnimationFrame(draw);
+            }
 
             draw();
-
     </script>
-
 }
