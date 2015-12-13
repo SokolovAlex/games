@@ -1,11 +1,12 @@
-﻿const image_folder = '/Areas/PixiGames/Images/';
+"use strict";
+
+var image_folder = '/Areas/PixiGames/Images/';
 //Aliases
 var Container = PIXI.Container,
     autoDetectRenderer = PIXI.autoDetectRenderer,
     loader = PIXI.loader,
     resources = PIXI.loader.resources,
     Sprite = PIXI.Sprite;
-
 
 function keyboard(keyCode) {
     var key = {};
@@ -35,24 +36,18 @@ function keyboard(keyCode) {
     };
 
     //Attach event listeners
-    window.addEventListener(
-      "keydown", key.downHandler.bind(key), false
-    );
-    window.addEventListener(
-      "keyup", key.upHandler.bind(key), false
-    );
+    window.addEventListener("keydown", key.downHandler.bind(key), false);
+    window.addEventListener("keyup", key.upHandler.bind(key), false);
     return key;
 }
-
 
 var renderer = new PIXI.CanvasRenderer(800, 500, { backgroundColor: 0x1099bb });
 
 $('.stage')[0].appendChild(renderer.view);
 
-var stage = new PIXI.Stage;
-var tankTexture = PIXI.Texture.fromImage(`${image_folder}t44_body.png`);
-var tankHeadTexture = PIXI.Texture.fromImage(`${image_folder}t44_head.png`);
-
+var stage = new PIXI.Stage();
+var tankTexture = PIXI.Texture.fromImage(image_folder + "t44_body.png");
+var tankHeadTexture = PIXI.Texture.fromImage(image_folder + "t44_head.png");
 
 var tbody = new PIXI.Sprite(tankTexture);
 tbody.y = window.innerHeight / 2 - 150;
@@ -109,7 +104,7 @@ up.release = function () {
 
 //Right
 right.press = function () {
-   
+
     tbody.x += 5;
 
     //tbody.vx = 5;
@@ -132,11 +127,9 @@ down.release = function () {
     }
 };
 
-
-
-var draw = () => {
+var draw = function draw() {
     renderer.render(stage);
     requestAnimationFrame(draw);
-}
+};
 
 draw();

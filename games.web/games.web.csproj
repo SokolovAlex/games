@@ -317,8 +317,8 @@
     <Content Include="Areas\Memory\Views\web.config" />
     <Content Include="Areas\Memory\Views\_ViewStart.cshtml" />
     <Content Include="Areas\Memory\Views\Memory\Page.cshtml" />
-    <Content Include="Areas\PixiGames\images\t44_body.png" />
-    <Content Include="Areas\PixiGames\images\t44_head.png" />
+    <Content Include="Areas\PixiGames\Images\t44_body.png" />
+    <Content Include="Areas\PixiGames\Images\t44_head.png" />
     <Content Include="Areas\PixiGames\Scripts\Tanki\start.js" />
     <Content Include="Areas\PixiGames\Views\web.config" />
     <Content Include="Areas\PixiGames\Views\Games\GamesList.cshtml" />

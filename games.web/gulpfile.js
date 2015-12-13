@@ -34,21 +34,20 @@ gulp.task('clean', function() {
 //		.pipe(browserSync.reload({ stream: true, once: true }));
 //});
 
-gulp.task("watch", function (cb) {
-    gulp.watch(watch_src, ['browserify']);
+var tanki_src = 'Areas/PixiGames/Scripts/Tanki/*.js';
+
+gulp.task("tanki_watch", function (cb) {
+    gulp.watch(tanki_src, ['tanki_js']);
 });
 
-gulp.task('es6', function () {
-    return gulp.src('examples/scripts_es6/Application.js')
-        .pipe(babel())
-        .pipe(gulp.dest('build/es6'));
-});
-
-gulp.task('tanki', function () {
+gulp.task('tanki_js', function () {
     return gulp
-        .src('Areas/PixiGames/Scripts/Tanki/*.js')
-        .pipe(babel())
+        .src(tanki_src)
+        .pipe(babel({
+            presets: ['es2015']
+        }))
+        .pipe(concat("tanki.js"))
         .pipe(gulp.dest('build_gulp/js'));
 });
 
-gulp.task("build", ['clean', 'browserify', 'watch']);
+gulp.task("tanki", ['tanki_js', 'tanki_watch']);
