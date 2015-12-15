@@ -6,6 +6,11 @@ var gulp = require("gulp"),
     concat = require("gulp-concat"),
     cssmin = require("gulp-cssmin"),
     gutil = require('gulp-util'),
+    stream = require('event-stream'),
+	browserify = require('browserify'),
+	babelify = require('babelify'),
+	source = require('vinyl-source-stream'),
+	size = require('gulp-size'),
     notify = require("gulp-notify"),
     uglify = require("gulp-uglify");
 
@@ -17,37 +22,44 @@ gulp.task('clean', function() {
         .pipe(rimraf());
 });
 
-//gulp.task('scripts', () => {
-//    return browserify('source/js/app.js', {
-//			debug: env === "development" ? true : false
-//		})
-//		.transform(babelify, { presets: ["es2015", "react"] })
-//		.bundle()
-//		.on("error", notify.onError({
-//		    message: 'Browserify error: <%= error.message %>'
-//		}))
-//		.pipe(source('application.js'))
-//		.pipe(gulp.dest('js'))
-//		.pipe(size({
-//		    title: 'size of modules'
-//		}))
-//		.pipe(browserSync.reload({ stream: true, once: true }));
-//});
-
 var tanki_src = 'Areas/PixiGames/Scripts/Tanki/*.js';
 
 gulp.task("tanki_watch", function (cb) {
     gulp.watch(tanki_src, ['tanki_js']);
 });
 
-gulp.task('tanki_js', function () {
-    return gulp
-        .src(tanki_src)
-        .pipe(babel({
-            presets: ['es2015']
-        }))
-        .pipe(concat("tanki.js"))
-        .pipe(gulp.dest('build_gulp/js'));
+//gulp.task('tanki_js', function () {
+//    return gulp
+//        .src(tanki_src)
+//        .pipe(babel({
+//            presets: ['es2015']
+//        }))
+//        .pipe(concat("tanki.js"))
+//        .pipe(gulp.dest('build_gulp/js'));
+//});
+
+gulp.task('tanki_js', () => {
+    const modules = browserify('Areas/PixiGames/Scripts/Tanki/start.js')
+		.transform(babelify, { presets: ["es2015"] })
+		.bundle()
+		.on("error", notify.onError({
+		    message: 'Browserify error: <%= error.message %>'
+		}))
+		.pipe(source('tanki.js'))
+		.pipe(gulp.dest('build_gulp/js'))
+		.pipe(size({
+		    title: 'size of modules'
+		}));
+
+    const deps = gulp.src(['Scripts/lodash.js'])
+		.pipe(concat('libs.js'))
+		.pipe(uglify())
+		.pipe(gulp.dest('build_gulp/js'))
+		.pipe(size({
+		    title: 'size of js dependencies'
+		}));
+
+    return stream.concat(modules, deps);
 });
 
 gulp.task("tanki", ['tanki_js', 'tanki_watch']);

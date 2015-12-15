@@ -319,7 +319,10 @@
     <Content Include="Areas\Memory\Views\Memory\Page.cshtml" />
     <Content Include="Areas\PixiGames\Images\t44_body.png" />
     <Content Include="Areas\PixiGames\Images\t44_head.png" />
+    <Content Include="Areas\PixiGames\Scripts\Tanki\controller.js" />
+    <Content Include="Areas\PixiGames\Scripts\Tanki\keyboard.js" />
     <Content Include="Areas\PixiGames\Scripts\Tanki\start.js" />
+    <Content Include="Areas\PixiGames\Scripts\Tanki\tank.js" />
     <Content Include="Areas\PixiGames\Views\web.config" />
     <Content Include="Areas\PixiGames\Views\Games\GamesList.cshtml" />
     <Content Include="Areas\PixiGames\Views\Games\Tanki.cshtml" />
@@ -373,6 +376,8 @@
     <None Include="Scripts\jquery-1.10.2.intellisense.js" />
     <Content Include="Scripts\jquery-1.10.2.js" />
     <Content Include="Scripts\jquery-1.10.2.min.js" />
+    <Content Include="Scripts\lodash.js" />
+    <Content Include="Scripts\lodash.min.js" />
     <Content Include="Scripts\modernizr-2.6.2.js" />
     <Content Include="Scripts\pixi_build\pixi.js" />
     <Content Include="Scripts\pixi_build\pixi.min.js" />
