@@ -2,70 +2,58 @@
 'use strict';
 
 module.exports = function (tank) {
-
     var keyboard = require('./keyboard.js');
 
-    var sprite = tank.sprite;
+    var left = keyboard(65),
+        forward = keyboard(87),
+        right = keyboard(68),
+        back = keyboard(83),
+        hleft = keyboard(37),
+        hright = keyboard(39);
 
-    //Capture the keyboard arrow keys
-    var left = keyboard(37),
-        up = keyboard(38),
-        right = keyboard(39),
-        down = keyboard(40);
+    hleft.press = function () {
+        tank.hrotate = 1;
+    };
 
-    //Left arrow key `press` method
+    hleft.release = function () {
+        tank.hrotate = 0;
+    };
+
+    hright.press = function () {
+        tank.hrotate = -1;
+    };
+
+    hright.release = function () {
+        tank.hrotate = 0;
+    };
+
     left.press = function () {
-
-        //Change the tbody's velocity when the key is pressed
-        sprite.vx = -5;
-        sprite.vy = 0;
+        tank.leftRotate = true;
     };
 
-    //Left arrow key `release` method
     left.release = function () {
-
-        //If the left arrow has been released, and the right arrow isn't down,
-        //and the tbody isn't moving vertically:
-        //Stop the tbody
-        if (!right.isDown && sprite.vy === 0) {
-            sprite.vx = 0;
-        }
+        tank.leftRotate = false;
     };
 
-    //Up
-    up.press = function () {
-        sprite.vy = -5;
-        sprite.vx = 0;
-    };
-    up.release = function () {
-        if (!down.isDown && sprite.vx === 0) {
-            sprite.vy = 0;
-        }
+    forward.press = function () {
+        tank.moveForward = true;
     };
 
-    //Right
+    forward.release = function () {
+        tank.moveForward = false;
+    };
+
     right.press = function () {
-
-        sprite.x += 5;
-
-        //tbody.vx = 5;
-        //tbody.vy = 0;
+        tank.rightRotate = true;
     };
     right.release = function () {
-        if (!left.isDown && sprite.vy === 0) {
-            sprite.vx = 0;
-        }
+        tank.rightRotate = false;
     };
-
-    //Down
-    down.press = function () {
-        sprite.vy = 5;
-        sprite.vx = 0;
+    back.press = function () {
+        tank.moveBack = true;
     };
-    down.release = function () {
-        if (!up.isDown && sprite.vx === 0) {
-            sprite.vy = 0;
-        }
+    back.release = function () {
+        tank.moveBack = false;
     };
 };
 
@@ -79,7 +67,7 @@ module.exports = function (keyCode) {
     key.isUp = true;
     key.press = undefined;
     key.release = undefined;
-    //The `downHandler`
+
     key.downHandler = function (event) {
         if (event.keyCode === key.code) {
             if (key.isUp && key.press) key.press();
@@ -89,7 +77,6 @@ module.exports = function (keyCode) {
         event.preventDefault();
     };
 
-    //The `upHandler`
     key.upHandler = function (event) {
         if (event.keyCode === key.code) {
             if (key.isDown && key.release) key.release();
@@ -122,7 +109,7 @@ var tank = Tank('t44');
 
 controller(tank);
 
-var renderer = new PIXI.CanvasRenderer(800, 500, { backgroundColor: 'green' }); //0x1099bb
+var renderer = new PIXI.CanvasRenderer(800, 500, { backgroundColor: '0x1099bb' });
 
 $('.stage')[0].appendChild(renderer.view);
 
@@ -130,9 +117,15 @@ var stage = new PIXI.Stage();
 
 stage.addChild(tank.sprite);
 
+var speed_display = $('#speed_display');
+
 var draw = function draw() {
     renderer.render(stage);
     requestAnimationFrame(draw);
+
+    tank.move();
+
+    speed_display.text(tank.speed);
 };
 
 draw();
@@ -148,14 +141,23 @@ var Tank = function Tank(tankName) {
 
     var tbody = new PIXI.Sprite(tankTexture);
     tbody.y = window.innerHeight / 2 - 150;
+    tbody.x = 100;
 
     var thead = new PIXI.Sprite(tankHeadTexture);
     thead.y = window.innerHeight / 2 - 150;
+    thead.x = 100;
 
-    var tank = new PIXI.Container();
+    var sprite = new PIXI.Container();
 
-    tank.addChild(tbody);
-    tank.addChild(thead);
+    sprite.addChild(tbody);
+    sprite.addChild(thead);
+
+    tbody.anchor.x = 0.5;
+    tbody.anchor.y = 0.5;
+
+    thead.anchor.x = 0.5;
+    thead.anchor.y = 0.5;
+    thead.pivot.set(-50, 0);
 
     var ratio = 0.2;
     tbody.scale.x = ratio;
@@ -163,9 +165,52 @@ var Tank = function Tank(tankName) {
     thead.scale.x = ratio;
     thead.scale.y = ratio;
 
-    return {
-        sprite: tank
+    var rotate_speed = 0.02;
+    var hrorate_speed = 0.03;
+    var max_speed_forward = 2;
+    var max_speed_back = 1;
+    var forward_accelerate = 0.03;
+    var back_accelerate = 0.02;
+    var resistance = 0.01;
+
+    var tank = {
+        sprite: sprite,
+        speed: 0,
+
+        move: function move() {
+            if (tank.leftRotate) {
+                tbody.rotation -= rotate_speed;
+                thead.rotation -= rotate_speed;
+            }
+            if (tank.rightRotate) {
+                tbody.rotation += rotate_speed;
+                thead.rotation += rotate_speed;
+            }
+
+            if (tank.moveForward) {
+                tank.speed += forward_accelerate;
+            }
+
+            if (tank.speed > 0) {
+                tank.speed -= resistance;
+            } else if (tank.speed < 0) {
+                tank.speed += resistance;
+            }
+
+            if (tank.speed > max_speed_forward) {
+                tank.speed = max_speed_forward;
+            }
+
+            sprite.x += tank.speed * Math.cos(tbody.rotation);
+            sprite.y += tank.speed * Math.sin(tbody.rotation);
+
+            if (tank.hrotate) {
+
+                thead.rotation += tank.hrotate * hrorate_speed;
+            }
+        }
     };
+    return tank;
 };
 module.exports = Tank;
 
