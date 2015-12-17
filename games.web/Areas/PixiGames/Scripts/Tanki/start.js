@@ -1,19 +1,11 @@
-﻿
-//Aliases
-var Container = PIXI.Container,
-    autoDetectRenderer = PIXI.autoDetectRenderer,
-    loader = PIXI.loader,
-    resources = PIXI.loader.resources,
-    Sprite = PIXI.Sprite;
-
-var Tank = require('./tank.js');
+﻿var Tank = require('./tank.js');
 var controller = require('./controller.js');
 
 var tank = Tank('t44');
 
 controller(tank);
 
-var renderer = new PIXI.CanvasRenderer(800, 500, { backgroundColor: '0x1099bb' });
+var renderer = new PIXI.CanvasRenderer(800, 500, { backgroundColor: 0x603a00 });
 
 $('.stage')[0].appendChild(renderer.view);
 
@@ -26,10 +18,9 @@ var speed_display = $('#speed_display');
 var draw = () => {
     renderer.render(stage);
     requestAnimationFrame(draw);
-
     tank.move();
-
-    speed_display.text(tank.speed);
 }
+
+setInterval(() => speed_display.text(tank.speed.toFixed(2)), 100)
 
 draw();

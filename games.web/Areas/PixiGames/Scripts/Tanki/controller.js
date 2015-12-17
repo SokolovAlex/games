@@ -9,7 +9,7 @@
         hright = keyboard(39);
 
     hleft.press = function () {
-        tank.hrotate = 1;
+        tank.hrotate = -1;
     };
 
     hleft.release = function () {
@@ -17,7 +17,7 @@
     };
 
     hright.press = function () {
-        tank.hrotate = -1;
+        tank.hrotate = 1;
     };
 
     hright.release = function () {
