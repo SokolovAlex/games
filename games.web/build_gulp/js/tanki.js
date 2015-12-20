@@ -1,7 +1,7 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 'use strict';
 
-module.exports = function (tank) {
+module.exports = function (tank, stage) {
     var keyboard = require('./keyboard.js');
 
     var left = keyboard(65),
@@ -9,51 +9,53 @@ module.exports = function (tank) {
         right = keyboard(68),
         back = keyboard(83),
         hleft = keyboard(37),
-        hright = keyboard(39);
+        hright = keyboard(39),
+        shout = keyboard(32);
 
     hleft.press = function () {
-        tank.hrotate = -1;
+        return tank.hrotate = -1;
     };
-
     hleft.release = function () {
-        tank.hrotate = 0;
+        return tank.hrotate = 0;
     };
 
     hright.press = function () {
-        tank.hrotate = 1;
+        return tank.hrotate = 1;
     };
-
     hright.release = function () {
-        tank.hrotate = 0;
+        return tank.hrotate = 0;
     };
 
     left.press = function () {
-        tank.leftRotate = true;
+        return tank.leftRotate = true;
     };
-
     left.release = function () {
-        tank.leftRotate = false;
+        return tank.leftRotate = false;
     };
 
     forward.press = function () {
-        tank.moveForward = true;
+        return tank.moveForward = true;
     };
-
     forward.release = function () {
-        tank.moveForward = false;
+        return tank.moveForward = false;
     };
 
     right.press = function () {
-        tank.rightRotate = true;
+        return tank.rightRotate = true;
     };
     right.release = function () {
-        tank.rightRotate = false;
+        return tank.rightRotate = false;
     };
+
     back.press = function () {
-        tank.moveBack = true;
+        return tank.moveBack = true;
     };
     back.release = function () {
-        tank.moveBack = false;
+        return tank.moveBack = false;
+    };
+
+    shout.press = function () {
+        return stage.addChild(tank.shout());
     };
 };
 
@@ -95,22 +97,27 @@ module.exports = function (keyCode) {
 },{}],3:[function(require,module,exports){
 'use strict';
 
+module.exports = {
+    image_folder: '/Areas/PixiGames/Images/'
+};
+
+},{}],4:[function(require,module,exports){
+'use strict';
+
 var Tank = require('./tank.js');
 var controller = require('./controller.js');
-
-var tank = Tank('t44');
-
-controller(tank);
 
 var renderer = new PIXI.CanvasRenderer(800, 500, { backgroundColor: 0x603a00 });
 
 $('.stage')[0].appendChild(renderer.view);
 
 var stage = new PIXI.Stage();
+var speed_display = $('#speed_display');
+
+var tank = Tank('t44');
+controller(tank, stage);
 
 stage.addChild(tank.sprite);
-
-var speed_display = $('#speed_display');
 
 var draw = function draw() {
     renderer.render(stage);
@@ -124,14 +131,15 @@ setInterval(function () {
 
 draw();
 
-},{"./controller.js":1,"./tank.js":4}],4:[function(require,module,exports){
+},{"./controller.js":1,"./tank.js":5}],5:[function(require,module,exports){
 'use strict';
 
 var Tank = function Tank(tankName) {
-    var image_folder = '/Areas/PixiGames/Images/';
+    var Whizzbang = require('./whizzbang.js'),
+        config = require('./settings');
 
-    var tankTexture = PIXI.Texture.fromImage('' + image_folder + tankName + '_body.png');
-    var tankHeadTexture = PIXI.Texture.fromImage('' + image_folder + tankName + '_head.png');
+    var tankTexture = PIXI.Texture.fromImage('' + config.image_folder + tankName + '_body.png');
+    var tankHeadTexture = PIXI.Texture.fromImage('' + config.image_folder + tankName + '_head.png');
 
     var tbody = new PIXI.Sprite(tankTexture);
     var thead = new PIXI.Sprite(tankHeadTexture);
@@ -162,12 +170,25 @@ var Tank = function Tank(tankName) {
     var forward_accelerate = 0.03;
     var back_accelerate = 0.02;
     var resistance = 0.01;
+    var trunk_length = 55;
+    var whizzbang_speed = 25;
 
     var tank = {
         sprite: sprite,
         speed: 0,
-        move: function move() {
+        shout: function shout() {
+            var direction = sprite.rotation + thead.rotation;
 
+            var x = sprite.x + Math.cos(direction) * trunk_length;
+            var y = sprite.y + Math.sin(direction) * trunk_length;
+
+            var whizzbang = new Whizzbang({ x: x, y: y });
+
+            whizzbang.start(whizzbang_speed, direction);
+
+            return whizzbang.sprite;
+        },
+        move: function move() {
             if (tank.moveForward) {
                 tank.speed += forward_accelerate;
             }
@@ -176,7 +197,7 @@ var Tank = function Tank(tankName) {
                 tank.speed -= back_accelerate;
             }
 
-            var isForward = tank.speed > resistance;
+            var isForward = tank.speed > -resistance;
             var res = isForward ? -1 : 1;
 
             if (Math.abs(tank.speed) < resistance) {
@@ -194,6 +215,7 @@ var Tank = function Tank(tankName) {
 
                 sprite.x += tank.speed * Math.cos(sprite.rotation);
                 sprite.y += tank.speed * Math.sin(sprite.rotation);
+                console.log(sprite.x, sprite.y);
             }
 
             if (tank.leftRotate) {
@@ -211,4 +233,52 @@ var Tank = function Tank(tankName) {
 };
 module.exports = Tank;
 
-},{}]},{},[3]);
+},{"./settings":3,"./whizzbang.js":6}],6:[function(require,module,exports){
+'use strict';
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var Whizzbang = (function () {
+        function Whizzbang(position) {
+                _classCallCheck(this, Whizzbang);
+
+                var config = require('./settings');
+                var texture = PIXI.Texture.fromImage(config.image_folder + 'shell.png');
+
+                this.sprite = new PIXI.Sprite(texture);
+                this.sprite.x = position.x;
+                this.sprite.y = position.y;
+
+                var ratio = 0.2;
+                this.sprite.scale.x = ratio;
+                this.sprite.scale.y = ratio;
+
+                this.sprite.anchor.x = 0.5;
+                this.sprite.anchor.y = 0.5;
+        }
+
+        _createClass(Whizzbang, [{
+                key: 'start',
+                value: function start(speed, direction) {
+                        var _this = this;
+
+                        var dx = speed * Math.cos(direction);
+                        var dy = speed * Math.sin(direction);
+
+                        this.sprite.rotation = direction;
+
+                        setInterval(function () {
+                                _this.sprite.x += dx;
+                                _this.sprite.y += dy;
+                        }, 200);
+                }
+        }]);
+
+        return Whizzbang;
+})();
+
+module.exports = Whizzbang;
+
+},{"./settings":3}]},{},[4]);

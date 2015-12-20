@@ -1,4 +1,4 @@
-﻿module.exports = function(tank) {
+﻿module.exports = function(tank, stage) {
     var keyboard = require('./keyboard.js');
 
     var left = keyboard(65),
@@ -6,50 +6,26 @@
         right = keyboard(68),
         back = keyboard(83),
         hleft = keyboard(37),
-        hright = keyboard(39);
+        hright = keyboard(39),
+        shout = keyboard(32);
 
-    hleft.press = function () {
-        tank.hrotate = -1;
-    };
+    hleft.press = () => tank.hrotate = -1;
+    hleft.release = () => tank.hrotate = 0;
 
-    hleft.release = function () {
-        tank.hrotate = 0;
-    };
+    hright.press = () => tank.hrotate = 1;
+    hright.release = () => tank.hrotate = 0;
 
-    hright.press = function () {
-        tank.hrotate = 1;
-    };
+    left.press = () => tank.leftRotate = true;
+    left.release = () => tank.leftRotate = false;
 
-    hright.release = function () {
-        tank.hrotate = 0;
-    };
+    forward.press = () => tank.moveForward = true;
+    forward.release = () => tank.moveForward = false;
 
-    left.press = function () {
-        tank.leftRotate = true;
-    };
+    right.press = () =>  tank.rightRotate = true;
+    right.release = () => tank.rightRotate = false;
 
-    left.release = function () {
-        tank.leftRotate = false;
-    };
+    back.press = () => tank.moveBack = true;
+    back.release = () => tank.moveBack = false;
 
-    forward.press = function () {
-        tank.moveForward = true;
-    };
-
-    forward.release = function () {
-        tank.moveForward = false;
-    };
-
-    right.press = function () {
-        tank.rightRotate = true;
-    };
-    right.release = function () {
-        tank.rightRotate = false;
-    };
-    back.press = function () {
-        tank.moveBack = true;
-    };
-    back.release = function () {
-        tank.moveBack = false;
-    };
+    shout.press = () => stage.addChild(tank.shout());
 }

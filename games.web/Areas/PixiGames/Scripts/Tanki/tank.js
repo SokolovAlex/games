@@ -1,8 +1,9 @@
 ﻿var Tank = (tankName) => {
-    const image_folder = '/Areas/PixiGames/Images/';
-    
-    var tankTexture = PIXI.Texture.fromImage(`${image_folder}${tankName}_body.png`);
-    var tankHeadTexture = PIXI.Texture.fromImage(`${image_folder}${tankName}_head.png`);
+    var Whizzbang = require('./whizzbang.js'),
+        config = require('./settings');
+
+    var tankTexture = PIXI.Texture.fromImage(`${config.image_folder}${tankName}_body.png`);
+    var tankHeadTexture = PIXI.Texture.fromImage(`${config.image_folder}${tankName}_head.png`);
 
     var tbody = new PIXI.Sprite(tankTexture);
     var thead = new PIXI.Sprite(tankHeadTexture);
@@ -33,13 +34,25 @@
     var forward_accelerate = 0.03;
     var back_accelerate = 0.02;
     var resistance = 0.01;
+    var trunk_length = 55;
+    var whizzbang_speed = 25;
 
     var tank = {
         sprite: sprite,
         speed: 0,
-        move: function () {
-           
+        shout: () => {
+            var direction = sprite.rotation + thead.rotation;
 
+            var x = sprite.x + Math.cos(direction) * trunk_length;
+            var y = sprite.y + Math.sin(direction) * trunk_length;
+
+            var whizzbang = new Whizzbang({x: x, y: y});
+
+            whizzbang.start(whizzbang_speed, direction);
+
+            return whizzbang.sprite;
+        },
+        move: () =>  {
             if (tank.moveForward) {
                 tank.speed += forward_accelerate;
             }
@@ -48,7 +61,7 @@
                 tank.speed -= back_accelerate;
             }
 
-            var isForward = tank.speed > resistance;
+            var isForward = tank.speed > -resistance;
             var res = isForward ? -1 : 1;
 
             if (Math.abs(tank.speed) < resistance) {
@@ -66,6 +79,7 @@
 
                 sprite.x += tank.speed * Math.cos(sprite.rotation);
                 sprite.y += tank.speed * Math.sin(sprite.rotation);
+                console.log(sprite.x, sprite.y);
             }
 
             if (tank.leftRotate) {
