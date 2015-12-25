@@ -27,5 +27,9 @@
     back.press = () => tank.moveBack = true;
     back.release = () => tank.moveBack = false;
 
-    shout.press = () => stage.addChild(tank.shout());
+    shout.press = () => {
+        var whizzbang = tank.shoot();
+        stage.moveble.push(whizzbang);
+        stage.addChild(whizzbang.sprite);
+    }
 }

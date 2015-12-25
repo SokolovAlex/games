@@ -34,23 +34,26 @@
     var forward_accelerate = 0.03;
     var back_accelerate = 0.02;
     var resistance = 0.01;
-    var trunk_length = 55;
-    var whizzbang_speed = 25;
+    var trunk_length = 50;
+    var whizzbang_speed = 5;
 
     var tank = {
         sprite: sprite,
         speed: 0,
-        shout: () => {
+        shoot: () => {
             var direction = sprite.rotation + thead.rotation;
 
-            var x = sprite.x + Math.cos(direction) * trunk_length;
+            var x = sprite.x - 7 + Math.cos(direction) * trunk_length;
             var y = sprite.y + Math.sin(direction) * trunk_length;
 
-            var whizzbang = new Whizzbang({x: x, y: y});
+            var whizzbang = new Whizzbang({
+                x: x,
+                y: y,
+                direction: direction,
+                speed: whizzbang_speed
+            });
 
-            whizzbang.start(whizzbang_speed, direction);
-
-            return whizzbang.sprite;
+            return whizzbang;
         },
         move: () =>  {
             if (tank.moveForward) {

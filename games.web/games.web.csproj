@@ -421,6 +421,7 @@
     <Folder Include="App_Data\" />
     <Folder Include="Areas\Memory\Models\" />
     <Folder Include="Areas\Memory\Views\Shared\" />
+    <Folder Include="Areas\PixiGames\Images\Textures\" />
     <Folder Include="Areas\PixiGames\Models\" />
     <Folder Include="Areas\PixiGames\Views\Shared\" />
     <Folder Include="build_gulp\css\" />
