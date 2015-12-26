@@ -27,10 +27,10 @@ module.exports = function (tank, stage) {
     };
 
     left.press = function () {
-        return tank.leftRotate = true;
+        return tank.brotate = 1;
     };
     left.release = function () {
-        return tank.leftRotate = false;
+        return tank.brotate = 0;
     };
 
     forward.press = function () {
@@ -41,10 +41,10 @@ module.exports = function (tank, stage) {
     };
 
     right.press = function () {
-        return tank.rightRotate = true;
+        return tank.brotate = -1;
     };
     right.release = function () {
-        return tank.rightRotate = false;
+        return tank.brotate = 0;
     };
 
     back.press = function () {
@@ -101,28 +101,58 @@ module.exports = function (keyCode) {
 
 module.exports = {
     image_folder: '/Areas/PixiGames/Images/',
-    textures_folder: '/Areas/PixiGames/Images/Textures/'
+    textures_folder: '/Areas/PixiGames/Images/Textures/',
+    stage_size: {
+        width: 800,
+        height: 500
+    }
 };
 
 },{}],4:[function(require,module,exports){
 'use strict';
 
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.prepareStage = prepareStage;
+exports.render = render;
+var renderer;
+
+function prepareStage() {
+    var config = require('./settings');
+
+    renderer = new PIXI.CanvasRenderer(config.stage_size.width, config.stage_size.height, { backgroundColor: 0x603a00 });
+    $('.stage')[0].appendChild(renderer.view);
+    var stage = new PIXI.Stage();
+
+    var stage_texture = PIXI.Sprite.fromImage(config.textures_folder + 'ground1.jpg');
+    stage_texture.width = config.stage_size.width;
+    stage_texture.height = config.stage_size.height;
+    stage.addChild(stage_texture);
+
+    return stage;
+}
+
+function render(stage) {
+    renderer.render(stage);
+}
+
+},{"./settings":3}],5:[function(require,module,exports){
+'use strict';
+
+var _stage = require('./stage.js');
+
+var renderer = _interopRequireWildcard(_stage);
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
 var Tank = require('./tank.js');
 var controller = require('./controller.js'),
     config = require('./settings');
 
-var renderer = new PIXI.CanvasRenderer(800, 500, { backgroundColor: 0x603a00 });
+var stage = renderer.prepareStage();
 
-$('.stage')[0].appendChild(renderer.view);
-
-var stage = new PIXI.Stage();
 var speed_display = $('#speed_display');
-
-var stage_texture = PIXI.Sprite.fromImage(config.textures_folder + 'ground1.jpg');
-stage_texture.width = 800;
-stage_texture.height = 500;
-
-stage.addChild(stage_texture);
 
 var tank = Tank('t44');
 
@@ -168,7 +198,7 @@ setInterval(function () {
 
 draw();
 
-},{"./controller.js":1,"./settings":3,"./tank.js":5}],5:[function(require,module,exports){
+},{"./controller.js":1,"./settings":3,"./stage.js":4,"./tank.js":6}],6:[function(require,module,exports){
 'use strict';
 
 var Tank = function Tank(tankName) {
@@ -191,7 +221,6 @@ var Tank = function Tank(tankName) {
     thead.anchor.y = 0.5;
 
     thead.pivot.set(-50, 0);
-    thead.x = -40;
 
     sprite.addChild(tbody);
     sprite.addChild(thead);
@@ -210,13 +239,21 @@ var Tank = function Tank(tankName) {
     var trunk_length = 50;
     var whizzbang_speed = 5;
 
+    var width, height, gip, atan;
+    tbody.texture.baseTexture.on('loaded', function () {
+        width = tbody.width * ratio;
+        height = tbody.height * ratio;
+        atan = Math.atan(height / width);
+        gip = Math.sqrt(width * width / 4 + height * height / 4);
+    });
+
     var tank = {
         sprite: sprite,
         speed: 0,
         shoot: function shoot() {
             var direction = sprite.rotation + thead.rotation;
 
-            var x = sprite.x - 7 + Math.cos(direction) * trunk_length;
+            var x = sprite.x + Math.cos(direction) * trunk_length;
             var y = sprite.y + Math.sin(direction) * trunk_length;
 
             var whizzbang = new Whizzbang({
@@ -229,6 +266,12 @@ var Tank = function Tank(tankName) {
             return whizzbang;
         },
         move: function move() {
+            var dx, dy, dr;
+
+            if (tank.hrotate) {
+                thead.rotation += tank.hrotate * hrorate_speed;
+            }
+
             if (tank.moveForward) {
                 tank.speed += forward_accelerate;
             }
@@ -255,25 +298,48 @@ var Tank = function Tank(tankName) {
 
                 sprite.x += tank.speed * Math.cos(sprite.rotation);
                 sprite.y += tank.speed * Math.sin(sprite.rotation);
-                console.log(sprite.x, sprite.y);
             }
 
-            if (tank.leftRotate) {
-                sprite.rotation += res * rotate_speed;
-            } else if (tank.rightRotate) {
-                sprite.rotation -= res * rotate_speed;
+            if (tank.brotate) {
+                sprite.rotation += res * tank.brotate * rotate_speed;
             }
 
-            if (tank.hrotate) {
-                thead.rotation += tank.hrotate * hrorate_speed;
+            if (tank.collision()) {
+                sprite.x -= tank.speed * Math.cos(sprite.rotation);
+                sprite.y -= tank.speed * Math.sin(sprite.rotation);
+                sprite.rotation -= res * tank.brotate * rotate_speed;
+                tank.speed = 0;
+                return;
             }
+        },
+        collision: function collision() {
+            var tank_dir = tank.speed >= 0 ? 1 : -1;
+
+            var dir1 = sprite.rotation + atan;
+            var dir2 = sprite.rotation - atan;
+
+            var cornerPoint1 = {
+                x: sprite.x + tank_dir * gip * Math.cos(dir1),
+                y: sprite.y + tank_dir * gip * Math.sin(dir1)
+            };
+
+            var cornerPoint2 = {
+                x: sprite.x + tank_dir * gip * Math.cos(dir2),
+                y: sprite.y + tank_dir * gip * Math.sin(dir2)
+            };
+
+            if (cornerPoint1.x < 0 || cornerPoint2.x < 0 || cornerPoint1.y < 0 || cornerPoint2.y < 0) {
+                return true;
+            }
+
+            return false;
         }
     };
     return tank;
 };
 module.exports = Tank;
 
-},{"./settings":3,"./whizzbang.js":6}],6:[function(require,module,exports){
+},{"./settings":3,"./whizzbang.js":7}],7:[function(require,module,exports){
 'use strict';
 
 var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
@@ -318,4 +384,4 @@ var Whizzbang = (function () {
 
 module.exports = Whizzbang;
 
-},{"./settings":3}]},{},[4]);
+},{"./settings":3}]},{},[5]);

@@ -319,6 +319,7 @@
     <Content Include="Areas\PixiGames\Scripts\Tanki\controller.js" />
     <Content Include="Areas\PixiGames\Scripts\Tanki\keyboard.js" />
     <Content Include="Areas\PixiGames\Scripts\Tanki\settings.js" />
+    <Content Include="Areas\PixiGames\Scripts\Tanki\stage.js" />
     <Content Include="Areas\PixiGames\Scripts\Tanki\start.js" />
     <Content Include="Areas\PixiGames\Scripts\Tanki\tank.js" />
     <Content Include="Areas\PixiGames\Scripts\Tanki\whizzbang.js" />

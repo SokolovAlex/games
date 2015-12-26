@@ -15,14 +15,14 @@
     hright.press = () => tank.hrotate = 1;
     hright.release = () => tank.hrotate = 0;
 
-    left.press = () => tank.leftRotate = true;
-    left.release = () => tank.leftRotate = false;
+    left.press = () => tank.brotate = 1;
+    left.release = () => tank.brotate = 0;
 
     forward.press = () => tank.moveForward = true;
     forward.release = () => tank.moveForward = false;
 
-    right.press = () =>  tank.rightRotate = true;
-    right.release = () => tank.rightRotate = false;
+    right.press = () =>  tank.brotate = -1;
+    right.release = () => tank.brotate = 0;
 
     back.press = () => tank.moveBack = true;
     back.release = () => tank.moveBack = false;

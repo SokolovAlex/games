@@ -18,7 +18,6 @@
     thead.anchor.y = 0.5;
 
     thead.pivot.set(-50, 0);
-    thead.x = -40;
 
     sprite.addChild(tbody);
     sprite.addChild(thead);
@@ -37,13 +36,24 @@
     var trunk_length = 50;
     var whizzbang_speed = 5;
 
+    var width,
+        height,
+        gip,
+        atan;
+    tbody.texture.baseTexture.on('loaded', () => {
+        width = tbody.width * ratio;
+        height = tbody.height * ratio;
+        atan = Math.atan(height / width);
+        gip = Math.sqrt(width * width/4 + height * height/4);
+    });
+
     var tank = {
         sprite: sprite,
         speed: 0,
         shoot: () => {
             var direction = sprite.rotation + thead.rotation;
 
-            var x = sprite.x - 7 + Math.cos(direction) * trunk_length;
+            var x = sprite.x + Math.cos(direction) * trunk_length;
             var y = sprite.y + Math.sin(direction) * trunk_length;
 
             var whizzbang = new Whizzbang({
@@ -55,7 +65,13 @@
 
             return whizzbang;
         },
-        move: () =>  {
+        move: () => {  
+            var dx, dy, dr;
+
+            if (tank.hrotate) {
+                thead.rotation += tank.hrotate * hrorate_speed;
+            }
+
             if (tank.moveForward) {
                 tank.speed += forward_accelerate;
             }
@@ -82,18 +98,45 @@
 
                 sprite.x += tank.speed * Math.cos(sprite.rotation);
                 sprite.y += tank.speed * Math.sin(sprite.rotation);
-                console.log(sprite.x, sprite.y);
             }
 
-            if (tank.leftRotate) {
-                sprite.rotation += res * rotate_speed;
-            } else if (tank.rightRotate) {
-                sprite.rotation -= res * rotate_speed;
+            if (tank.brotate) {
+                sprite.rotation += res * tank.brotate * rotate_speed;
+            } 
+
+            if (tank.collision()) {
+                sprite.x -= tank.speed * Math.cos(sprite.rotation);
+                sprite.y -= tank.speed * Math.sin(sprite.rotation);
+                sprite.rotation -= res * tank.brotate * rotate_speed;
+                tank.speed = 0;
+                return;
             }
-            
-            if (tank.hrotate) {
-                thead.rotation += tank.hrotate * hrorate_speed;
+
+        },
+        collision: () => {
+            var tank_dir = tank.speed >= 0 ? 1 : -1;
+
+            var dir1 = sprite.rotation + atan;
+            var dir2 = sprite.rotation - atan;
+
+            var cornerPoint1 = {
+                x: sprite.x + tank_dir * gip * Math.cos(dir1),
+                y: sprite.y + tank_dir * gip * Math.sin(dir1)
+            };
+
+            var cornerPoint2 = {
+                x: sprite.x + tank_dir * gip * Math.cos(dir2),
+                y: sprite.y + tank_dir * gip * Math.sin(dir2)
+            };
+
+            if (cornerPoint1.x < 0
+                || cornerPoint2.x < 0
+                || cornerPoint1.y < 0
+                || cornerPoint2.y < 0) {
+                return true;
             }
+
+            return false;
         }
     };
     return tank;
