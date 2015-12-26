@@ -36,15 +36,12 @@
     var trunk_length = 50;
     var whizzbang_speed = 5;
 
-    var width,
-        height,
-        gip,
-        atan;
+    var width, height, gip, atan;
     tbody.texture.baseTexture.on('loaded', () => {
         width = tbody.width * ratio;
         height = tbody.height * ratio;
         atan = Math.atan(height / width);
-        gip = Math.sqrt(width * width/4 + height * height/4);
+        gip = Math.sqrt(width * width / 4 + height * height / 4);
     });
 
     var tank = {
@@ -66,7 +63,7 @@
             return whizzbang;
         },
         move: () => {  
-            var dx, dy, dr;
+            var dx = 0, dy = 0, dr = 0;
 
             if (tank.hrotate) {
                 thead.rotation += tank.hrotate * hrorate_speed;
@@ -95,23 +92,24 @@
                 if (tank.speed < max_speed_back) {
                     tank.speed = max_speed_back;
                 }
-
-                sprite.x += tank.speed * Math.cos(sprite.rotation);
-                sprite.y += tank.speed * Math.sin(sprite.rotation);
+                dx = tank.speed * Math.cos(sprite.rotation);
+                dy = tank.speed * Math.sin(sprite.rotation);
+                sprite.x += dx;
+                sprite.y += dy;
             }
 
             if (tank.brotate) {
-                sprite.rotation += res * tank.brotate * rotate_speed;
+                dr = res * tank.brotate * rotate_speed;
+                sprite.rotation += dr;
             } 
 
             if (tank.collision()) {
-                sprite.x -= tank.speed * Math.cos(sprite.rotation);
-                sprite.y -= tank.speed * Math.sin(sprite.rotation);
-                sprite.rotation -= res * tank.brotate * rotate_speed;
+                sprite.x -= dx;
+                sprite.y -= dy;
+                sprite.rotation -= dr;
                 tank.speed = 0;
                 return;
             }
-
         },
         collision: () => {
             var tank_dir = tank.speed >= 0 ? 1 : -1;

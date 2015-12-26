@@ -10,7 +10,7 @@ module.exports = function (tank, stage) {
         back = keyboard(83),
         hleft = keyboard(37),
         hright = keyboard(39),
-        shout = keyboard(32);
+        whitespace = keyboard(32);
 
     hleft.press = function () {
         return tank.hrotate = -1;
@@ -54,7 +54,7 @@ module.exports = function (tank, stage) {
         return tank.moveBack = false;
     };
 
-    shout.press = function () {
+    whitespace.press = function () {
         var whizzbang = tank.shoot();
         stage.moveble.push(whizzbang);
         stage.addChild(whizzbang.sprite);
@@ -140,14 +140,15 @@ function render(stage) {
 },{"./settings":3}],5:[function(require,module,exports){
 'use strict';
 
-var _stage = require('./stage.js');
+var _stage = require('./stage');
 
 var renderer = _interopRequireWildcard(_stage);
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
-var Tank = require('./tank.js');
-var controller = require('./controller.js'),
+var Tank = require('./tank'),
+    controller = require('./controller'),
+    Zombar = require('./zombar'),
     config = require('./settings');
 
 var stage = renderer.prepareStage();
@@ -196,9 +197,15 @@ setInterval(function () {
     return speed_display.text(tank.speed.toFixed(2));
 }, 100);
 
+setInterval(function () {
+    var newZombar = new Zombar();
+    stage.moveble.push(newZombar);
+    stage.addChild(newZombar.sprite);
+}, 1000);
+
 draw();
 
-},{"./controller.js":1,"./settings":3,"./stage.js":4,"./tank.js":6}],6:[function(require,module,exports){
+},{"./controller":1,"./settings":3,"./stage":4,"./tank":6,"./zombar":8}],6:[function(require,module,exports){
 'use strict';
 
 var Tank = function Tank(tankName) {
@@ -266,7 +273,9 @@ var Tank = function Tank(tankName) {
             return whizzbang;
         },
         move: function move() {
-            var dx, dy, dr;
+            var dx = 0,
+                dy = 0,
+                dr = 0;
 
             if (tank.hrotate) {
                 thead.rotation += tank.hrotate * hrorate_speed;
@@ -295,19 +304,21 @@ var Tank = function Tank(tankName) {
                 if (tank.speed < max_speed_back) {
                     tank.speed = max_speed_back;
                 }
-
-                sprite.x += tank.speed * Math.cos(sprite.rotation);
-                sprite.y += tank.speed * Math.sin(sprite.rotation);
+                dx = tank.speed * Math.cos(sprite.rotation);
+                dy = tank.speed * Math.sin(sprite.rotation);
+                sprite.x += dx;
+                sprite.y += dy;
             }
 
             if (tank.brotate) {
-                sprite.rotation += res * tank.brotate * rotate_speed;
+                dr = res * tank.brotate * rotate_speed;
+                sprite.rotation += dr;
             }
 
             if (tank.collision()) {
-                sprite.x -= tank.speed * Math.cos(sprite.rotation);
-                sprite.y -= tank.speed * Math.sin(sprite.rotation);
-                sprite.rotation -= res * tank.brotate * rotate_speed;
+                sprite.x -= dx;
+                sprite.y -= dy;
+                sprite.rotation -= dr;
                 tank.speed = 0;
                 return;
             }
@@ -377,11 +388,92 @@ var Whizzbang = (function () {
             this.sprite.x += this.dx;
             this.sprite.y += this.dy;
         }
+    }, {
+        key: 'destruct',
+        value: function destruct() {}
     }]);
 
     return Whizzbang;
 })();
 
 module.exports = Whizzbang;
+
+},{"./settings":3}],8:[function(require,module,exports){
+'use strict';
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var getRandom = function getRandom(min, max) {
+    return Math.random() * (max - min) + min;
+};
+
+var randomPosition = function randomPosition(width, height) {
+    var pi = Math.PI;
+    var r = Math.random();
+    var x, y, dir;
+
+    if (r > 0.75) {
+        x = width + 10;
+        y = Math.random() * height;
+        dir = getRandom(pi / 2, pi * 3 / 2);
+    } else if (r > 0.5) {
+        x = -10;
+        y = Math.random() * height;
+        dir = getRandom(-pi / 2, pi / 2);
+    } else if (r > 0.25) {
+        y = -10;
+        x = Math.random() * width;
+        dir = getRandom(0, pi);
+    } else {
+        y = height + 10;
+        x = Math.random() * width;
+        dir = getRandom(pi, 2 * pi);
+    }
+    return { x: x, y: y, dir: dir };
+};
+
+var Zombar = (function () {
+    function Zombar() {
+        _classCallCheck(this, Zombar);
+
+        var config = require('./settings'),
+            width = config.stage_size.width,
+            height = config.stage_size.height;
+
+        var pos = randomPosition(width, height);
+        var x = pos.x,
+            y = pos.y,
+            dir = pos.dir;
+
+        this.sprite = PIXI.Sprite.fromImage(config.image_folder + 'zombie.png');
+        this.sprite.anchor.x = 0.5;
+        this.sprite.anchor.y = 0.5;
+
+        this.sprite.x = x;
+        this.sprite.y = y;
+
+        var speed = getRandom(1, 2);
+
+        this.dx = speed * Math.cos(dir);
+        this.dy = speed * Math.sin(dir);
+    }
+
+    _createClass(Zombar, [{
+        key: 'move',
+        value: function move() {
+            this.sprite.x += this.dx;
+            this.sprite.y += this.dy;
+        }
+    }, {
+        key: 'destruct',
+        value: function destruct() {}
+    }]);
+
+    return Zombar;
+})();
+
+module.exports = Zombar;
 
 },{"./settings":3}]},{},[5]);

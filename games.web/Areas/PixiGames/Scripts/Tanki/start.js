@@ -1,8 +1,9 @@
-﻿var Tank = require('./tank.js');
-var controller = require('./controller.js'),
+﻿var Tank = require('./tank'),
+    controller = require('./controller'),
+    Zombar = require('./zombar'),
     config = require('./settings');
 
-import * as renderer from "./stage.js";
+import * as renderer from "./stage";
 
 var stage = renderer.prepareStage();
 
@@ -25,6 +26,12 @@ var draw = () => {
     }
 }
 
-setInterval(() => speed_display.text(tank.speed.toFixed(2)), 100)
+setInterval(() => speed_display.text(tank.speed.toFixed(2)), 100);
+
+setInterval(() => {
+    var newZombar = new Zombar();
+    stage.moveble.push(newZombar);
+    stage.addChild(newZombar.sprite);
+}, 1000);
 
 draw();

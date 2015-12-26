@@ -7,7 +7,7 @@
         back = keyboard(83),
         hleft = keyboard(37),
         hright = keyboard(39),
-        shout = keyboard(32);
+        whitespace = keyboard(32);
 
     hleft.press = () => tank.hrotate = -1;
     hleft.release = () => tank.hrotate = 0;
@@ -27,7 +27,7 @@
     back.press = () => tank.moveBack = true;
     back.release = () => tank.moveBack = false;
 
-    shout.press = () => {
+    whitespace.press = () => {
         var whizzbang = tank.shoot();
         stage.moveble.push(whizzbang);
         stage.addChild(whizzbang.sprite);

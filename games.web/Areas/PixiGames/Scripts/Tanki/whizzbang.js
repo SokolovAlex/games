@@ -24,6 +24,9 @@
         this.sprite.x += this.dx;
         this.sprite.y += this.dy;
     }
+    destruct() {
+
+    }
 }
 
 module.exports = Whizzbang;

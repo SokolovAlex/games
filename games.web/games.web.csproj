@@ -316,6 +316,7 @@
     <Content Include="Areas\PixiGames\Images\shell.png" />
     <Content Include="Areas\PixiGames\Images\t44_body.png" />
     <Content Include="Areas\PixiGames\Images\t44_head.png" />
+    <Content Include="Areas\PixiGames\Images\zombie.png" />
     <Content Include="Areas\PixiGames\Scripts\Tanki\controller.js" />
     <Content Include="Areas\PixiGames\Scripts\Tanki\keyboard.js" />
     <Content Include="Areas\PixiGames\Scripts\Tanki\settings.js" />
@@ -323,6 +324,7 @@
     <Content Include="Areas\PixiGames\Scripts\Tanki\start.js" />
     <Content Include="Areas\PixiGames\Scripts\Tanki\tank.js" />
     <Content Include="Areas\PixiGames\Scripts\Tanki\whizzbang.js" />
+    <Content Include="Areas\PixiGames\Scripts\Tanki\zombar.js" />
     <Content Include="Areas\PixiGames\Views\web.config" />
     <Content Include="Areas\PixiGames\Views\Games\GamesList.cshtml" />
     <Content Include="Areas\PixiGames\Views\Games\Tanki.cshtml" />
