@@ -165,7 +165,6 @@ stage.addChild(tank.sprite);
 var draw = function draw() {
     renderer.render(stage);
     requestAnimationFrame(draw);
-    tank.move();
 
     var _iteratorNormalCompletion = true;
     var _didIteratorError = false;
@@ -191,6 +190,8 @@ var draw = function draw() {
             }
         }
     }
+
+    tank.move(stage.moveble);
 };
 
 setInterval(function () {
@@ -205,7 +206,7 @@ setInterval(function () {
 
 draw();
 
-},{"./controller":1,"./settings":3,"./stage":4,"./tank":6,"./zombar":8}],6:[function(require,module,exports){
+},{"./controller":1,"./settings":3,"./stage":4,"./tank":6,"./zombar":9}],6:[function(require,module,exports){
 'use strict';
 
 var Tank = function Tank(tankName) {
@@ -247,12 +248,16 @@ var Tank = function Tank(tankName) {
     var whizzbang_speed = 5;
 
     var width, height, gip, atan;
+    var loaded = false;
     tbody.texture.baseTexture.on('loaded', function () {
+        loaded = true;
         width = tbody.width * ratio;
         height = tbody.height * ratio;
         atan = Math.atan(height / width);
         gip = Math.sqrt(width * width / 4 + height * height / 4);
     });
+
+    var cornerPoint1, cornerPoint2, cornerPoint3, cornerPoint4;
 
     var tank = {
         sprite: sprite,
@@ -272,7 +277,7 @@ var Tank = function Tank(tankName) {
 
             return whizzbang;
         },
-        move: function move() {
+        move: function move(enemies) {
             var dx = 0,
                 dy = 0,
                 dr = 0;
@@ -324,33 +329,144 @@ var Tank = function Tank(tankName) {
             }
         },
         collision: function collision() {
+            if (!loaded) {
+                return false;
+            }
+
             var tank_dir = tank.speed >= 0 ? 1 : -1;
 
             var dir1 = sprite.rotation + atan;
             var dir2 = sprite.rotation - atan;
 
-            var cornerPoint1 = {
+            cornerPoint1 = {
                 x: sprite.x + tank_dir * gip * Math.cos(dir1),
                 y: sprite.y + tank_dir * gip * Math.sin(dir1)
             };
 
-            var cornerPoint2 = {
+            cornerPoint2 = {
                 x: sprite.x + tank_dir * gip * Math.cos(dir2),
                 y: sprite.y + tank_dir * gip * Math.sin(dir2)
             };
+
+            cornerPoint3 = {
+                x: sprite.x - tank_dir * gip * Math.cos(dir1),
+                y: sprite.y - tank_dir * gip * Math.sin(dir1)
+            };
+
+            cornerPoint4 = {
+                x: sprite.x - tank_dir * gip * Math.cos(dir2),
+                y: sprite.y - tank_dir * gip * Math.sin(dir2)
+            };
+
+            tank.a1 = cornerPoint1.x === cornerPoint2.x ? false : (cornerPoint1.y - cornerPoint2.y) / (cornerPoint1.x - cornerPoint2.x);
+            tank.a2 = cornerPoint1.x === cornerPoint4.x ? false : (cornerPoint1.y - cornerPoint4.y) / (cornerPoint1.x - cornerPoint4.x);
+
+            if (tank.a1 !== false) {
+                tank.b1 = cornerPoint1.x * tank.a1 + cornerPoint1.y;
+                tank.b2 = cornerPoint3.x * tank.a1 + cornerPoint3.y;
+            }
+
+            if (tank.a2 !== false) {
+                tank.b3 = cornerPoint1.x * tank.a2 + cornerPoint1.y;
+                tank.b4 = cornerPoint3.x * tank.a2 + cornerPoint3.y;
+            }
+
+            console.log("!!!!", tank.a1, tank.a2);
+
+            console.log("bbbbb", tank.b1, tank.b2, tank.b3, tank.b4);
 
             if (cornerPoint1.x < 0 || cornerPoint2.x < 0 || cornerPoint1.y < 0 || cornerPoint2.y < 0) {
                 return true;
             }
 
+            if (cornerPoint1.x > config.stage_size.width || cornerPoint2.x > config.stage_size.width || cornerPoint1.y > config.stage_size.height || cornerPoint2.y > config.stage_size.height) {
+                return true;
+            }
+
+            if (cornerPoint3.x < 0 || cornerPoint4.x < 0 || cornerPoint3.y < 0 || cornerPoint4.y < 0) {
+                return true;
+            }
+
+            if (cornerPoint3.x > config.stage_size.width || cornerPoint4.x > config.stage_size.width || cornerPoint3.y > config.stage_size.height || cornerPoint4.y > config.stage_size.height) {
+                return true;
+            }
+
             return false;
+        },
+        checkKill: function checkKill(enemies) {
+            var _iteratorNormalCompletion = true;
+            var _didIteratorError = false;
+            var _iteratorError = undefined;
+
+            try {
+                for (var _iterator = enemies[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+                    var enemy = _step.value;
+
+                    var corners = enemy.getCorners();
+                    for (var corner in corners) {}
+                }
+            } catch (err) {
+                _didIteratorError = true;
+                _iteratorError = err;
+            } finally {
+                try {
+                    if (!_iteratorNormalCompletion && _iterator.return) {
+                        _iterator.return();
+                    }
+                } finally {
+                    if (_didIteratorError) {
+                        throw _iteratorError;
+                    }
+                }
+            }
         }
     };
     return tank;
 };
 module.exports = Tank;
 
-},{"./settings":3,"./whizzbang.js":7}],7:[function(require,module,exports){
+},{"./settings":3,"./whizzbang.js":8}],7:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.getRandom = getRandom;
+exports.randomPosition = randomPosition;
+var getRandom = function getRandom(min, max) {
+    return Math.random() * (max - min) + min;
+};
+
+function getRandom(min, max) {
+    return getRandom(min, max);
+};
+
+function randomPosition(width, height) {
+    var pi = Math.PI;
+    var r = Math.random();
+    var x, y, dir;
+
+    if (r > 0.75) {
+        x = width + 10;
+        y = Math.random() * height;
+        dir = getRandom(pi / 2, pi * 3 / 2);
+    } else if (r > 0.5) {
+        x = -10;
+        y = Math.random() * height;
+        dir = getRandom(-pi / 2, pi / 2);
+    } else if (r > 0.25) {
+        y = -10;
+        x = Math.random() * width;
+        dir = getRandom(0, pi);
+    } else {
+        y = height + 10;
+        x = Math.random() * width;
+        dir = getRandom(pi, 2 * pi);
+    }
+    return { x: x, y: y, dir: dir };
+};
+
+},{}],8:[function(require,module,exports){
 'use strict';
 
 var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
@@ -398,41 +514,18 @@ var Whizzbang = (function () {
 
 module.exports = Whizzbang;
 
-},{"./settings":3}],8:[function(require,module,exports){
+},{"./settings":3}],9:[function(require,module,exports){
 'use strict';
 
 var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
+var _utils = require('./utils');
+
+var utils = _interopRequireWildcard(_utils);
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-var getRandom = function getRandom(min, max) {
-    return Math.random() * (max - min) + min;
-};
-
-var randomPosition = function randomPosition(width, height) {
-    var pi = Math.PI;
-    var r = Math.random();
-    var x, y, dir;
-
-    if (r > 0.75) {
-        x = width + 10;
-        y = Math.random() * height;
-        dir = getRandom(pi / 2, pi * 3 / 2);
-    } else if (r > 0.5) {
-        x = -10;
-        y = Math.random() * height;
-        dir = getRandom(-pi / 2, pi / 2);
-    } else if (r > 0.25) {
-        y = -10;
-        x = Math.random() * width;
-        dir = getRandom(0, pi);
-    } else {
-        y = height + 10;
-        x = Math.random() * width;
-        dir = getRandom(pi, 2 * pi);
-    }
-    return { x: x, y: y, dir: dir };
-};
 
 var Zombar = (function () {
     function Zombar() {
@@ -442,7 +535,7 @@ var Zombar = (function () {
             width = config.stage_size.width,
             height = config.stage_size.height;
 
-        var pos = randomPosition(width, height);
+        var pos = utils.randomPosition(width, height);
         var x = pos.x,
             y = pos.y,
             dir = pos.dir;
@@ -454,7 +547,7 @@ var Zombar = (function () {
         this.sprite.x = x;
         this.sprite.y = y;
 
-        var speed = getRandom(1, 2);
+        var speed = utils.getRandom(1, 2);
 
         this.dx = speed * Math.cos(dir);
         this.dy = speed * Math.sin(dir);
@@ -467,6 +560,33 @@ var Zombar = (function () {
             this.sprite.y += this.dy;
         }
     }, {
+        key: 'getCorners',
+        value: function getCorners() {
+            var x = this.sprite.x,
+                y = this.sprite.y,
+                halfwidth = this.sprite.width / 2,
+                halfheight = this.sprite.height / 2;
+
+            return {
+                ne: {
+                    x: x - halfwidth,
+                    y: y + halfheight
+                },
+                se: {
+                    x: x + halfwidth,
+                    y: y - halfheight
+                },
+                nw: {
+                    x: x - halfwidth,
+                    y: y - halfheight
+                },
+                sw: {
+                    x: x + halfwidth,
+                    y: y + halfheight
+                }
+            };
+        }
+    }, {
         key: 'destruct',
         value: function destruct() {}
     }]);
@@ -476,4 +596,4 @@ var Zombar = (function () {
 
 module.exports = Zombar;
 
-},{"./settings":3}]},{},[5]);
+},{"./settings":3,"./utils":7}]},{},[5]);

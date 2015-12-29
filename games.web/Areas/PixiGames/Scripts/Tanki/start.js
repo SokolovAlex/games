@@ -19,11 +19,12 @@ stage.addChild(tank.sprite);
 var draw = () => {
     renderer.render(stage);
     requestAnimationFrame(draw);
-    tank.move();
 
     for (var item of stage.moveble) {
         item.move();
     }
+
+    tank.move(stage.moveble);
 }
 
 setInterval(() => speed_display.text(tank.speed.toFixed(2)), 100);

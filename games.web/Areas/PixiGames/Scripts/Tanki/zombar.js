@@ -1,31 +1,4 @@
-﻿let getRandom = (min, max) => {
-    return Math.random() * (max - min) + min;
-}
-
-let randomPosition = (width, height) => {
-    var pi = Math.PI;
-    var r = Math.random();
-    var x, y, dir;
-
-    if (r > 0.75) {
-        x = width + 10;
-        y = Math.random() * height;
-        dir = getRandom(pi / 2, pi * 3 / 2);
-    } else if (r > 0.5) {
-        x = -10;
-        y = Math.random() * height;
-        dir = getRandom(-pi / 2, pi / 2);
-    } else if (r > 0.25) {
-        y = -10;
-        x = Math.random() * width;
-        dir = getRandom(0, pi);
-    } else {
-        y = height + 10;
-        x = Math.random() * width;
-        dir = getRandom(pi, 2 * pi);
-    }
-    return {x: x, y: y, dir: dir};
-}
+﻿import * as utils from './utils';
 
 class Zombar {
     constructor() {
@@ -33,7 +6,7 @@ class Zombar {
             width = config.stage_size.width,
             height = config.stage_size.height;
 
-        var pos = randomPosition(width, height);
+        var pos = utils.randomPosition(width, height);
         var x = pos.x,
             y = pos.y,
             dir = pos.dir;
@@ -45,7 +18,7 @@ class Zombar {
         this.sprite.x = x;
         this.sprite.y = y;
 
-        var speed = getRandom(1, 2);
+        var speed = utils.getRandom(1, 2);
 
         this.dx = speed * Math.cos(dir);
         this.dy = speed * Math.sin(dir);
@@ -53,6 +26,31 @@ class Zombar {
     move() {
         this.sprite.x += this.dx;
         this.sprite.y += this.dy;
+    }
+    getCorners() {
+        var x = this.sprite.x,
+            y = this.sprite.y,
+            halfwidth = this.sprite.width / 2,
+            halfheight = this.sprite.height / 2;
+
+        return {
+            ne: {
+                x: x - halfwidth,
+                y: y + halfheight
+                },
+            se: {
+                x: x + halfwidth,
+                y: y - halfheight
+            },
+            nw: {
+                x: x - halfwidth,
+                y: y - halfheight
+            },
+            sw: {
+                x: x + halfwidth,
+                y: y + halfheight
+            }
+        };
     }
     destruct() {
 

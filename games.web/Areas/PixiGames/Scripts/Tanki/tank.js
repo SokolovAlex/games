@@ -37,12 +37,16 @@
     var whizzbang_speed = 5;
 
     var width, height, gip, atan;
+    var loaded = false;
     tbody.texture.baseTexture.on('loaded', () => {
+        loaded = true;
         width = tbody.width * ratio;
         height = tbody.height * ratio;
         atan = Math.atan(height / width);
         gip = Math.sqrt(width * width / 4 + height * height / 4);
     });
+
+    var cornerPoint1, cornerPoint2, cornerPoint3, cornerPoint4;
 
     var tank = {
         sprite: sprite,
@@ -62,7 +66,7 @@
 
             return whizzbang;
         },
-        move: () => {  
+        move: (enemies) => {  
             var dx = 0, dy = 0, dr = 0;
 
             if (tank.hrotate) {
@@ -112,20 +116,53 @@
             }
         },
         collision: () => {
+            if(!loaded) {
+                return false;
+            }
+
             var tank_dir = tank.speed >= 0 ? 1 : -1;
 
             var dir1 = sprite.rotation + atan;
             var dir2 = sprite.rotation - atan;
 
-            var cornerPoint1 = {
+            cornerPoint1 = {
                 x: sprite.x + tank_dir * gip * Math.cos(dir1),
                 y: sprite.y + tank_dir * gip * Math.sin(dir1)
             };
 
-            var cornerPoint2 = {
+            cornerPoint2 = {
                 x: sprite.x + tank_dir * gip * Math.cos(dir2),
                 y: sprite.y + tank_dir * gip * Math.sin(dir2)
             };
+            
+            cornerPoint3 = {
+                x: sprite.x - tank_dir * gip * Math.cos(dir1),
+                y: sprite.y - tank_dir * gip * Math.sin(dir1)
+            };
+
+            cornerPoint4 = {
+                x: sprite.x - tank_dir * gip * Math.cos(dir2),
+                y: sprite.y - tank_dir * gip * Math.sin(dir2)
+            };
+
+            tank.a1 = cornerPoint1.x === cornerPoint2.x ? false :
+                (cornerPoint1.y - cornerPoint2.y) / (cornerPoint1.x - cornerPoint2.x);
+            tank.a2 = cornerPoint1.x === cornerPoint4.x ? false :
+                (cornerPoint1.y - cornerPoint4.y) / (cornerPoint1.x - cornerPoint4.x);
+
+            if(tank.a1 !== false) {
+                tank.b1 = cornerPoint1.x * tank.a1 + cornerPoint1.y;
+                tank.b2 = cornerPoint3.x * tank.a1 + cornerPoint3.y;
+            }
+            
+            if (tank.a2 !== false) {
+                tank.b3 = cornerPoint1.x * tank.a2 + cornerPoint1.y;
+                tank.b4 = cornerPoint3.x * tank.a2 + cornerPoint3.y;
+            }
+
+            console.log("!!!!", tank.a1, tank.a2);
+
+            console.log("bbbbb", tank.b1, tank.b2, tank.b3, tank.b4);
 
             if (cornerPoint1.x < 0
                 || cornerPoint2.x < 0
@@ -134,7 +171,39 @@
                 return true;
             }
 
+            if (cornerPoint1.x > config.stage_size.width
+                || cornerPoint2.x > config.stage_size.width
+                || cornerPoint1.y > config.stage_size.height
+                || cornerPoint2.y > config.stage_size.height) {
+                return true;
+            }
+
+            if (cornerPoint3.x < 0
+               || cornerPoint4.x < 0
+               || cornerPoint3.y < 0
+               || cornerPoint4.y < 0) {
+                return true;
+            }
+
+            if (cornerPoint3.x > config.stage_size.width
+                || cornerPoint4.x > config.stage_size.width
+                || cornerPoint3.y > config.stage_size.height
+                || cornerPoint4.y > config.stage_size.height) {
+                return true;
+            }
+
             return false;
+        },
+        checkKill: (enemies) => {
+            for(var enemy of enemies) {
+                var corners = enemy.getCorners();
+                for(var corner in corners) {
+                    
+
+                    
+
+                }
+            }
         }
     };
     return tank;
