@@ -9,7 +9,7 @@ var stage = renderer.prepareStage();
 
 var speed_display = $('#speed_display');
 
-var tank = Tank('t44');
+var tank = Tank('t44', stage);
 
 stage.moveble = [];
 controller(tank, stage);
@@ -23,8 +23,9 @@ var draw = () => {
     for (var item of stage.moveble) {
         item.move();
     }
+    tank.move();
 
-    tank.move(stage.moveble);
+    tank.checkKill(stage.moveble);
 }
 
 setInterval(() => speed_display.text(tank.speed.toFixed(2)), 100);
@@ -34,5 +35,9 @@ setInterval(() => {
     stage.moveble.push(newZombar);
     stage.addChild(newZombar.sprite);
 }, 1000);
+
+//var newZombar = new Zombar({x: 300,y:300,speed:0,dir:1});
+//    stage.moveble.push(newZombar);
+//    stage.addChild(newZombar.sprite);
 
 draw();

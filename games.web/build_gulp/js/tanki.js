@@ -155,7 +155,7 @@ var stage = renderer.prepareStage();
 
 var speed_display = $('#speed_display');
 
-var tank = Tank('t44');
+var tank = Tank('t44', stage);
 
 stage.moveble = [];
 controller(tank, stage);
@@ -191,7 +191,9 @@ var draw = function draw() {
         }
     }
 
-    tank.move(stage.moveble);
+    tank.move();
+
+    tank.checkKill(stage.moveble);
 };
 
 setInterval(function () {
@@ -204,12 +206,16 @@ setInterval(function () {
     stage.addChild(newZombar.sprite);
 }, 1000);
 
+//var newZombar = new Zombar({x: 300,y:300,speed:0,dir:1});
+//    stage.moveble.push(newZombar);
+//    stage.addChild(newZombar.sprite);
+
 draw();
 
 },{"./controller":1,"./settings":3,"./stage":4,"./tank":6,"./zombar":9}],6:[function(require,module,exports){
 'use strict';
 
-var Tank = function Tank(tankName) {
+var Tank = function Tank(tankName, stage) {
     var Whizzbang = require('./whizzbang.js'),
         config = require('./settings');
 
@@ -277,7 +283,7 @@ var Tank = function Tank(tankName) {
 
             return whizzbang;
         },
-        move: function move(enemies) {
+        move: function move() {
             var dx = 0,
                 dy = 0,
                 dr = 0;
@@ -333,47 +339,45 @@ var Tank = function Tank(tankName) {
                 return false;
             }
 
-            var tank_dir = tank.speed >= 0 ? 1 : -1;
-
             var dir1 = sprite.rotation + atan;
             var dir2 = sprite.rotation - atan;
 
             cornerPoint1 = {
-                x: sprite.x + tank_dir * gip * Math.cos(dir1),
-                y: sprite.y + tank_dir * gip * Math.sin(dir1)
+                x: sprite.x + gip * Math.cos(dir1),
+                y: sprite.y + gip * Math.sin(dir1)
             };
 
             cornerPoint2 = {
-                x: sprite.x + tank_dir * gip * Math.cos(dir2),
-                y: sprite.y + tank_dir * gip * Math.sin(dir2)
+                x: sprite.x + gip * Math.cos(dir2),
+                y: sprite.y + gip * Math.sin(dir2)
             };
 
             cornerPoint3 = {
-                x: sprite.x - tank_dir * gip * Math.cos(dir1),
-                y: sprite.y - tank_dir * gip * Math.sin(dir1)
+                x: sprite.x - gip * Math.cos(dir1),
+                y: sprite.y - gip * Math.sin(dir1)
             };
 
             cornerPoint4 = {
-                x: sprite.x - tank_dir * gip * Math.cos(dir2),
-                y: sprite.y - tank_dir * gip * Math.sin(dir2)
+                x: sprite.x - gip * Math.cos(dir2),
+                y: sprite.y - gip * Math.sin(dir2)
             };
 
             tank.a1 = cornerPoint1.x === cornerPoint2.x ? false : (cornerPoint1.y - cornerPoint2.y) / (cornerPoint1.x - cornerPoint2.x);
             tank.a2 = cornerPoint1.x === cornerPoint4.x ? false : (cornerPoint1.y - cornerPoint4.y) / (cornerPoint1.x - cornerPoint4.x);
 
             if (tank.a1 !== false) {
-                tank.b1 = cornerPoint1.x * tank.a1 + cornerPoint1.y;
-                tank.b2 = cornerPoint3.x * tank.a1 + cornerPoint3.y;
+                var b1 = -cornerPoint1.x * tank.a1 + cornerPoint1.y;
+                var b2 = -cornerPoint3.x * tank.a1 + cornerPoint3.y;
+                tank.maxb1 = Math.max(b1, b2);
+                tank.minb1 = Math.min(b1, b2);
             }
 
             if (tank.a2 !== false) {
-                tank.b3 = cornerPoint1.x * tank.a2 + cornerPoint1.y;
-                tank.b4 = cornerPoint3.x * tank.a2 + cornerPoint3.y;
+                var b3 = -cornerPoint1.x * tank.a2 + cornerPoint1.y;
+                var b4 = -cornerPoint3.x * tank.a2 + cornerPoint3.y;
+                tank.maxb2 = Math.max(b3, b4);
+                tank.minb2 = Math.min(b3, b4);
             }
-
-            console.log("!!!!", tank.a1, tank.a2);
-
-            console.log("bbbbb", tank.b1, tank.b2, tank.b3, tank.b4);
 
             if (cornerPoint1.x < 0 || cornerPoint2.x < 0 || cornerPoint1.y < 0 || cornerPoint2.y < 0) {
                 return true;
@@ -394,6 +398,8 @@ var Tank = function Tank(tankName) {
             return false;
         },
         checkKill: function checkKill(enemies) {
+            var toKill = [];
+
             var _iteratorNormalCompletion = true;
             var _didIteratorError = false;
             var _iteratorError = undefined;
@@ -403,7 +409,14 @@ var Tank = function Tank(tankName) {
                     var enemy = _step.value;
 
                     var corners = enemy.getCorners();
-                    for (var corner in corners) {}
+                    for (var key in corners) {
+                        var corner = corners[key];
+                        var b1 = -tank.a1 * corner.x + corner.y;
+                        var b2 = -tank.a2 * corner.x + corner.y;
+                        if (b1 < tank.maxb1 && b1 > tank.minb1 && b2 < tank.maxb2 && b2 > tank.minb2) {
+                            console.log("Killing");
+                        }
+                    }
                 }
             } catch (err) {
                 _didIteratorError = true;
@@ -528,14 +541,22 @@ function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj;
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var Zombar = (function () {
-    function Zombar() {
+    function Zombar(options) {
         _classCallCheck(this, Zombar);
+
+        options = options || {};
 
         var config = require('./settings'),
             width = config.stage_size.width,
             height = config.stage_size.height;
 
-        var pos = utils.randomPosition(width, height);
+        var pos;
+        if (options.x && options.y && options.dir) {
+            pos = options;
+        } else {
+            pos = utils.randomPosition(width, height);
+        }
+
         var x = pos.x,
             y = pos.y,
             dir = pos.dir;
@@ -547,7 +568,12 @@ var Zombar = (function () {
         this.sprite.x = x;
         this.sprite.y = y;
 
-        var speed = utils.getRandom(1, 2);
+        var speed;
+        if (options.speed !== undefined) {
+            speed = options.speed;
+        } else {
+            speed = utils.getRandom(1, 2);
+        }
 
         this.dx = speed * Math.cos(dir);
         this.dy = speed * Math.sin(dir);

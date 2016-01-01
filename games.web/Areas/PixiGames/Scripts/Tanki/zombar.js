@@ -1,12 +1,20 @@
 ﻿import * as utils from './utils';
 
 class Zombar {
-    constructor() {
+    constructor(options) {
+        options = options || {};
+
         var config = require('./settings'),
             width = config.stage_size.width,
             height = config.stage_size.height;
 
-        var pos = utils.randomPosition(width, height);
+        var pos;
+        if (options.x && options.y && options.dir) {
+            pos = options;
+        } else {
+            pos = utils.randomPosition(width, height);
+        }
+
         var x = pos.x,
             y = pos.y,
             dir = pos.dir;
@@ -18,7 +26,12 @@ class Zombar {
         this.sprite.x = x;
         this.sprite.y = y;
 
-        var speed = utils.getRandom(1, 2);
+        var speed;
+        if (options.speed !== undefined) {
+            speed = options.speed;
+        } else {
+            speed = utils.getRandom(1, 2);
+        }
 
         this.dx = speed * Math.cos(dir);
         this.dy = speed * Math.sin(dir);
@@ -37,7 +50,7 @@ class Zombar {
             ne: {
                 x: x - halfwidth,
                 y: y + halfheight
-                },
+            },
             se: {
                 x: x + halfwidth,
                 y: y - halfheight

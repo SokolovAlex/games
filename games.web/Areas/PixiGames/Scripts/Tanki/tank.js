@@ -1,4 +1,4 @@
-﻿var Tank = (tankName) => {
+﻿var Tank = (tankName, stage) => {
     var Whizzbang = require('./whizzbang.js'),
         config = require('./settings');
 
@@ -66,7 +66,7 @@
 
             return whizzbang;
         },
-        move: (enemies) => {  
+        move: () => {  
             var dx = 0, dy = 0, dr = 0;
 
             if (tank.hrotate) {
@@ -120,29 +120,27 @@
                 return false;
             }
 
-            var tank_dir = tank.speed >= 0 ? 1 : -1;
-
             var dir1 = sprite.rotation + atan;
             var dir2 = sprite.rotation - atan;
 
             cornerPoint1 = {
-                x: sprite.x + tank_dir * gip * Math.cos(dir1),
-                y: sprite.y + tank_dir * gip * Math.sin(dir1)
+                x: sprite.x + gip * Math.cos(dir1),
+                y: sprite.y + gip * Math.sin(dir1)
             };
 
             cornerPoint2 = {
-                x: sprite.x + tank_dir * gip * Math.cos(dir2),
-                y: sprite.y + tank_dir * gip * Math.sin(dir2)
+                x: sprite.x + gip * Math.cos(dir2),
+                y: sprite.y + gip * Math.sin(dir2)
             };
             
             cornerPoint3 = {
-                x: sprite.x - tank_dir * gip * Math.cos(dir1),
-                y: sprite.y - tank_dir * gip * Math.sin(dir1)
+                x: sprite.x - gip * Math.cos(dir1),
+                y: sprite.y - gip * Math.sin(dir1)
             };
 
             cornerPoint4 = {
-                x: sprite.x - tank_dir * gip * Math.cos(dir2),
-                y: sprite.y - tank_dir * gip * Math.sin(dir2)
+                x: sprite.x - gip * Math.cos(dir2),
+                y: sprite.y - gip * Math.sin(dir2)
             };
 
             tank.a1 = cornerPoint1.x === cornerPoint2.x ? false :
@@ -151,18 +149,18 @@
                 (cornerPoint1.y - cornerPoint4.y) / (cornerPoint1.x - cornerPoint4.x);
 
             if(tank.a1 !== false) {
-                tank.b1 = cornerPoint1.x * tank.a1 + cornerPoint1.y;
-                tank.b2 = cornerPoint3.x * tank.a1 + cornerPoint3.y;
+                var b1 = - cornerPoint1.x * tank.a1 + cornerPoint1.y;
+                var b2 = - cornerPoint3.x * tank.a1 + cornerPoint3.y;
+                tank.maxb1 = Math.max(b1, b2);
+                tank.minb1 = Math.min(b1, b2);
             }
-            
+
             if (tank.a2 !== false) {
-                tank.b3 = cornerPoint1.x * tank.a2 + cornerPoint1.y;
-                tank.b4 = cornerPoint3.x * tank.a2 + cornerPoint3.y;
+                var b3 = - cornerPoint1.x * tank.a2 + cornerPoint1.y;
+                var b4 = - cornerPoint3.x * tank.a2 + cornerPoint3.y;
+                tank.maxb2 = Math.max(b3, b4);
+                tank.minb2 = Math.min(b3, b4);
             }
-
-            console.log("!!!!", tank.a1, tank.a2);
-
-            console.log("bbbbb", tank.b1, tank.b2, tank.b3, tank.b4);
 
             if (cornerPoint1.x < 0
                 || cornerPoint2.x < 0
@@ -195,13 +193,20 @@
             return false;
         },
         checkKill: (enemies) => {
+            var toKill = [];
+
             for(var enemy of enemies) {
                 var corners = enemy.getCorners();
-                for(var corner in corners) {
-                    
+                for (var key in corners) {
+                    var corner = corners[key];
+                    let b1 = - tank.a1 * corner.x + corner.y;
+                    let b2 = - tank.a2 * corner.x + corner.y;
+                    if (b1 < tank.maxb1 && b1 > tank.minb1
+                        && b2 < tank.maxb2 && b2 > tank.minb2) {
+                        console.log("Killing");
 
-                    
-
+                        
+                    }
                 }
             }
         }
