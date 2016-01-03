@@ -56,7 +56,7 @@ module.exports = function (tank, stage) {
 
     whitespace.press = function () {
         var whizzbang = tank.shoot();
-        stage.moveble.push(whizzbang);
+        stage.shells.push(whizzbang);
         stage.addChild(whizzbang.sprite);
     };
 };
@@ -126,6 +126,7 @@ function prepareStage() {
     var stage = new PIXI.Stage();
 
     var stage_texture = PIXI.Sprite.fromImage(config.textures_folder + 'ground1.jpg');
+    stage_texture.z = -10;
     stage_texture.width = config.stage_size.width;
     stage_texture.height = config.stage_size.height;
     stage.addChild(stage_texture);
@@ -149,6 +150,7 @@ function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj;
 var Tank = require('./tank'),
     controller = require('./controller'),
     Zombar = require('./zombar'),
+    Whizzbang = require('./whizzbang.js'),
     config = require('./settings');
 
 var stage = renderer.prepareStage();
@@ -157,12 +159,14 @@ var speed_display = $('#speed_display');
 
 var tank = Tank('t44', stage);
 
-stage.moveble = [];
+stage.shells = [];
+stage.zombies = [];
 controller(tank, stage);
 
 stage.addChild(tank.sprite);
 
 var draw = function draw() {
+
     renderer.render(stage);
     requestAnimationFrame(draw);
 
@@ -171,7 +175,7 @@ var draw = function draw() {
     var _iteratorError = undefined;
 
     try {
-        for (var _iterator = stage.moveble[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+        for (var _iterator = stage.shells[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
             var item = _step.value;
 
             item.move();
@@ -191,28 +195,55 @@ var draw = function draw() {
         }
     }
 
-    tank.move();
+    var _iteratorNormalCompletion2 = true;
+    var _didIteratorError2 = false;
+    var _iteratorError2 = undefined;
 
-    tank.checkKill(stage.moveble);
+    try {
+        for (var _iterator2 = stage.zombies[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+            var zombie = _step2.value;
+
+            zombie.move();
+        }
+    } catch (err) {
+        _didIteratorError2 = true;
+        _iteratorError2 = err;
+    } finally {
+        try {
+            if (!_iteratorNormalCompletion2 && _iterator2.return) {
+                _iterator2.return();
+            }
+        } finally {
+            if (_didIteratorError2) {
+                throw _iteratorError2;
+            }
+        }
+    }
+
+    tank.move();
+    tank.checkKill(stage.zombies, stage.shells);
 };
 
 setInterval(function () {
     return speed_display.text(tank.speed.toFixed(2));
 }, 100);
 
+Zombar.setStage(stage);
+Whizzbang.setStage(stage);
+
 setInterval(function () {
     var newZombar = new Zombar();
-    stage.moveble.push(newZombar);
+    stage.zombies.push(newZombar);
     stage.addChild(newZombar.sprite);
-}, 1000);
+}, 300);
 
-//var newZombar = new Zombar({x: 300,y:300,speed:0,dir:1});
-//    stage.moveble.push(newZombar);
-//    stage.addChild(newZombar.sprite);
+//var newZombar = new Zombar({x: 300,y:300,speed:0.1,dir:-Math.PI/2});
+//stage.zombies.push(newZombar);
+//stage.addChild(newZombar.sprite);
 
 draw();
 
-},{"./controller":1,"./settings":3,"./stage":4,"./tank":6,"./zombar":9}],6:[function(require,module,exports){
+},{"./controller":1,"./settings":3,"./stage":4,"./tank":6,"./whizzbang.js":8,"./zombar":9}],6:[function(require,module,exports){
 'use strict';
 
 var Tank = function Tank(tankName, stage) {
@@ -228,6 +259,7 @@ var Tank = function Tank(tankName, stage) {
 
     sprite.y = 200;
     sprite.x = 200;
+    sprite.z = 10;
 
     tbody.anchor.x = 0.5;
     tbody.anchor.y = 0.5;
@@ -397,41 +429,29 @@ var Tank = function Tank(tankName, stage) {
 
             return false;
         },
-        checkKill: function checkKill(enemies) {
-            var toKill = [];
-
-            var _iteratorNormalCompletion = true;
-            var _didIteratorError = false;
-            var _iteratorError = undefined;
-
-            try {
-                for (var _iterator = enemies[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-                    var enemy = _step.value;
-
-                    var corners = enemy.getCorners();
-                    for (var key in corners) {
-                        var corner = corners[key];
-                        var b1 = -tank.a1 * corner.x + corner.y;
-                        var b2 = -tank.a2 * corner.x + corner.y;
-                        if (b1 < tank.maxb1 && b1 > tank.minb1 && b2 < tank.maxb2 && b2 > tank.minb2) {
-                            console.log("Killing");
-                        }
+        checkKill: function checkKill(enemies, shells) {
+            _.each(enemies, function (enemy, i) {
+                var corners = enemy.getCorners();
+                for (var key in corners) {
+                    var corner = corners[key];
+                    var b1 = -tank.a1 * corner.x + corner.y;
+                    var b2 = -tank.a2 * corner.x + corner.y;
+                    if (b1 < tank.maxb1 && b1 > tank.minb1 && b2 < tank.maxb2 && b2 > tank.minb2) {
+                        enemy.dead();
+                        return;
                     }
                 }
-            } catch (err) {
-                _didIteratorError = true;
-                _iteratorError = err;
-            } finally {
-                try {
-                    if (!_iteratorNormalCompletion && _iterator.return) {
-                        _iterator.return();
+
+                _.each(shells, function (shell) {
+                    var x = shell.sprite.x;
+                    var y = shell.sprite.y;
+                    if (x > corners.nw.x && x < corners.ne.x && y > corners.nw.y && y < corners.sw.y) {
+                        enemy.dead();
+                        shell.destruct();
+                        return;
                     }
-                } finally {
-                    if (_didIteratorError) {
-                        throw _iteratorError;
-                    }
-                }
-            }
+                });
+            });
         }
     };
     return tank;
@@ -445,6 +465,7 @@ Object.defineProperty(exports, "__esModule", {
     value: true
 });
 exports.getRandom = getRandom;
+exports.depthCompare = depthCompare;
 exports.randomPosition = randomPosition;
 var getRandom = function getRandom(min, max) {
     return Math.random() * (max - min) + min;
@@ -452,6 +473,12 @@ var getRandom = function getRandom(min, max) {
 
 function getRandom(min, max) {
     return getRandom(min, max);
+};
+
+function depthCompare(a, b) {
+    if (a.z < b.z) return -1;
+    if (a.z > b.z) return 1;
+    return 0;
 };
 
 function randomPosition(width, height) {
@@ -486,16 +513,26 @@ var _createClass = (function () { function defineProperties(target, props) { for
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
+var stage;
+var config = require('./settings');
+var texture = PIXI.Texture.fromImage(config.image_folder + 'shell.png');
+var id = 0;
+
 var Whizzbang = (function () {
+    _createClass(Whizzbang, null, [{
+        key: 'setStage',
+        value: function setStage(_stage) {
+            stage = _stage;
+        }
+    }]);
+
     function Whizzbang(opt) {
         _classCallCheck(this, Whizzbang);
-
-        var config = require('./settings');
-        var texture = PIXI.Texture.fromImage(config.image_folder + 'shell.png');
 
         this.sprite = new PIXI.Sprite(texture);
         this.sprite.x = opt.x;
         this.sprite.y = opt.y;
+        this.id = id++;
 
         var ratio = 0.2;
         this.sprite.scale.x = ratio;
@@ -516,10 +553,24 @@ var Whizzbang = (function () {
         value: function move() {
             this.sprite.x += this.dx;
             this.sprite.y += this.dy;
+
+            var w = config.stage_size.width;
+            var h = config.stage_size.height;
+            var precision = 10;
+
+            if (this.sprite.x > w + precision || this.sprite.x < -precision || this.sprite.y > h + precision || this.sprite.y < -precision) {
+                this.destruct();
+            }
         }
     }, {
         key: 'destruct',
-        value: function destruct() {}
+        value: function destruct() {
+            var self = this;
+            stage.removeChild(this.sprite);
+            stage.shells = _.reject(stage.shells, function (z) {
+                return z.id == self.id;
+            });
+        }
     }]);
 
     return Whizzbang;
@@ -540,14 +591,27 @@ function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj;
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
+var config = require('./settings');
+var deadTexture = PIXI.Texture.fromImage(config.image_folder + 'blood.png');
+var id = 0;
+var stage;
+
 var Zombar = (function () {
+    _createClass(Zombar, null, [{
+        key: 'setStage',
+        value: function setStage(_stage) {
+            stage = _stage;
+        }
+    }]);
+
     function Zombar(options) {
         _classCallCheck(this, Zombar);
 
         options = options || {};
 
-        var config = require('./settings'),
-            width = config.stage_size.width,
+        this.id = id++;
+
+        var width = config.stage_size.width,
             height = config.stage_size.height;
 
         var pos;
@@ -565,6 +629,8 @@ var Zombar = (function () {
         this.sprite.anchor.x = 0.5;
         this.sprite.anchor.y = 0.5;
 
+        this.sprite.z = 1;
+
         this.sprite.x = x;
         this.sprite.y = y;
 
@@ -577,6 +643,8 @@ var Zombar = (function () {
 
         this.dx = speed * Math.cos(dir);
         this.dy = speed * Math.sin(dir);
+
+        stage.children.sort(utils.depthCompare);
     }
 
     _createClass(Zombar, [{
@@ -584,6 +652,23 @@ var Zombar = (function () {
         value: function move() {
             this.sprite.x += this.dx;
             this.sprite.y += this.dy;
+            var w = config.stage_size.width;
+            var h = config.stage_size.height;
+            var precision = 40;
+
+            if (this.sprite.x > w + precision || this.sprite.x < -precision || this.sprite.y > h + precision || this.sprite.y < -precision) {
+                this.dead();
+            }
+        }
+    }, {
+        key: 'dead',
+        value: function dead() {
+            var self = this;
+            this.sprite.texture = deadTexture;
+            this.sprite.z = -1;
+            stage.zombies = _.reject(stage.zombies, function (z) {
+                return z.id == self.id;
+            });
         }
     }, {
         key: 'getCorners',
@@ -595,26 +680,35 @@ var Zombar = (function () {
 
             return {
                 ne: {
-                    x: x - halfwidth,
+                    x: x + halfwidth,
                     y: y + halfheight
                 },
                 se: {
+                    x: x + halfwidth / 2,
+                    y: y - halfheight
+                },
+                w: {
+                    x: x - halfwidth,
+                    y: y
+                },
+                e: {
                     x: x + halfwidth,
+                    y: y
+                },
+                n: {
+                    x: x,
                     y: y - halfheight
                 },
                 nw: {
-                    x: x - halfwidth,
+                    x: x - halfwidth / 2,
                     y: y - halfheight
                 },
                 sw: {
-                    x: x + halfwidth,
+                    x: x - halfwidth,
                     y: y + halfheight
                 }
             };
         }
-    }, {
-        key: 'destruct',
-        value: function destruct() {}
     }]);
 
     return Zombar;

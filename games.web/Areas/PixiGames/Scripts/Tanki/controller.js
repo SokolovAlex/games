@@ -29,7 +29,7 @@
 
     whitespace.press = () => {
         var whizzbang = tank.shoot();
-        stage.moveble.push(whizzbang);
+        stage.shells.push(whizzbang);
         stage.addChild(whizzbang.sprite);
     }
 }

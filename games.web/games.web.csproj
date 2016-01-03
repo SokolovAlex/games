@@ -313,7 +313,9 @@
     <Content Include="Areas\Memory\Views\web.config" />
     <Content Include="Areas\Memory\Views\_ViewStart.cshtml" />
     <Content Include="Areas\Memory\Views\Memory\Page.cshtml" />
+    <Content Include="Areas\PixiGames\Images\blood.png" />
     <Content Include="Areas\PixiGames\Images\shell.png" />
+    <Content Include="Areas\PixiGames\Images\SpriteSheet.png" />
     <Content Include="Areas\PixiGames\Images\t44_body.png" />
     <Content Include="Areas\PixiGames\Images\t44_head.png" />
     <Content Include="Areas\PixiGames\Images\zombie.png" />
@@ -364,6 +366,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="package.json" />
+    <Content Include="Areas\PixiGames\Images\SpriteSheet.json" />
     <None Include="Scripts\jquery-1.10.2.intellisense.js" />
     <Content Include="Scripts\jquery-1.10.2.js" />
     <Content Include="Scripts\jquery-1.10.2.min.js" />

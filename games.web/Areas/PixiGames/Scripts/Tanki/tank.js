@@ -11,6 +11,7 @@
 
     sprite.y = 200;
     sprite.x = 200;
+    sprite.z = 10;
 
     tbody.anchor.x = 0.5;
     tbody.anchor.y = 0.5;
@@ -192,23 +193,31 @@
 
             return false;
         },
-        checkKill: (enemies) => {
-            var toKill = [];
-
-            for(var enemy of enemies) {
+        checkKill: (enemies, shells) => {
+            _.each(enemies, (enemy, i) => {
                 var corners = enemy.getCorners();
                 for (var key in corners) {
                     var corner = corners[key];
-                    let b1 = - tank.a1 * corner.x + corner.y;
-                    let b2 = - tank.a2 * corner.x + corner.y;
+                    let b1 = -tank.a1 * corner.x + corner.y;
+                    let b2 = -tank.a2 * corner.x + corner.y;
                     if (b1 < tank.maxb1 && b1 > tank.minb1
                         && b2 < tank.maxb2 && b2 > tank.minb2) {
-                        console.log("Killing");
-
-                        
+                        enemy.dead();
+                        return;
                     }
                 }
-            }
+
+                _.each(shells, (shell) => {
+                    var x = shell.sprite.x;
+                    var y = shell.sprite.y;
+                    if (x > corners.nw.x && x < corners.ne.x
+                        && y > corners.nw.y && y < corners.sw.y) {
+                        enemy.dead();
+                        shell.destruct();
+                        return;
+                    }
+                });
+            });
         }
     };
     return tank;

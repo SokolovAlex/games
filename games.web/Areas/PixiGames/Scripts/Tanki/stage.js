@@ -8,6 +8,7 @@ export function prepareStage() {
     var stage = new PIXI.Stage;
 
     var stage_texture = PIXI.Sprite.fromImage(`${config.textures_folder}ground1.jpg`);
+    stage_texture.z = -10;
     stage_texture.width = config.stage_size.width;
     stage_texture.height = config.stage_size.height;
     stage.addChild(stage_texture);

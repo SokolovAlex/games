@@ -6,6 +6,14 @@ export function getRandom(min, max){
     return getRandom(min, max);
 };
 
+export function depthCompare(a,b) {
+    if (a.z < b.z)
+        return -1;
+    if (a.z > b.z)
+        return 1;
+    return 0;
+};
+
 export function randomPosition(width, height) {
     var pi = Math.PI;
     var r = Math.random();
