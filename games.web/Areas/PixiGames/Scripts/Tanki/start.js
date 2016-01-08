@@ -8,7 +8,9 @@ import * as renderer from "./stage";
 
 var stage = renderer.prepareStage();
 
-var speed_display = $('#speed_display');
+var speed_display = $('#speed_display'),
+    reloading_display = $('#reloading_display'),
+    points_display = $('#points_display');
 
 var tank = Tank('t44', stage);
 
@@ -19,7 +21,6 @@ controller(tank, stage);
 stage.addChild(tank.sprite);
 
 var draw = () => {
-    
     renderer.render(stage);
     requestAnimationFrame(draw);
 
@@ -33,7 +34,19 @@ var draw = () => {
     tank.checkKill(stage.zombies, stage.shells);
 }
 
-setInterval(() => speed_display.text(tank.speed.toFixed(2)), 100);
+setInterval(() => {
+    speed_display.text(tank.speed.toFixed(2));
+    points_display.text(tank.points);
+    if(tank.reloading) {
+        var time = 3000 -( new Date() - tank.shootTime);
+        time = time/1000;
+        reloading_display.css('background-color', 'red');
+        reloading_display.text(time);
+    } else {
+        reloading_display.css('background-color', 'green');
+        reloading_display.text(3.0);
+    }
+}, 100);
 
 Zombar.setStage(stage);
 Whizzbang.setStage(stage);

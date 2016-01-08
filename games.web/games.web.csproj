@@ -320,6 +320,7 @@
     <Content Include="Areas\PixiGames\Images\t44_head.png" />
     <Content Include="Areas\PixiGames\Images\zombie.png" />
     <Content Include="Areas\PixiGames\Scripts\Tanki\controller.js" />
+    <Content Include="Areas\PixiGames\Scripts\Tanki\explosion.js" />
     <Content Include="Areas\PixiGames\Scripts\Tanki\keyboard.js" />
     <Content Include="Areas\PixiGames\Scripts\Tanki\settings.js" />
     <Content Include="Areas\PixiGames\Scripts\Tanki\stage.js" />

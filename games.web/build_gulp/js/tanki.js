@@ -56,12 +56,63 @@ module.exports = function (tank, stage) {
 
     whitespace.press = function () {
         var whizzbang = tank.shoot();
-        stage.shells.push(whizzbang);
-        stage.addChild(whizzbang.sprite);
+        if (whizzbang) {
+            stage.shells.push(whizzbang);
+            stage.addChild(whizzbang.sprite);
+        }
     };
 };
 
-},{"./keyboard.js":2}],2:[function(require,module,exports){
+},{"./keyboard.js":3}],2:[function(require,module,exports){
+'use strict';
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var stage;
+var config = require('./settings');
+var id = 0;
+
+PIXI.loader.add('spritesheet', config.image_folder + 'SpriteSheet.json').load(onAssetsLoaded);
+
+var explosionTextures = [];
+
+function onAssetsLoaded() {
+    for (var i = 0; i < 26; i++) {
+        var texture = PIXI.Texture.fromFrame('Explosion_Sequence_A ' + (i + 1) + '.png');
+        explosionTextures.push(texture);
+    }
+}
+
+var Explosion = (function () {
+    function Explosion(opt) {
+        _classCallCheck(this, Explosion);
+
+        var movie = new PIXI.extras.MovieClip(explosionTextures);
+        movie.position.x = opt.x;
+        movie.position.y = opt.y;
+        movie.anchor.x = 0.5;
+        movie.anchor.y = 0.5;
+        movie.gotoAndPlay(10);
+        movie.loop = false;
+        movie.scale.x = 0.5;
+        movie.scale.y = 0.5;
+        movie.z = 0;
+        this.movie = movie;
+    }
+
+    _createClass(Explosion, [{
+        key: 'destruct',
+        value: function destruct() {}
+    }]);
+
+    return Explosion;
+})();
+
+module.exports = Explosion;
+
+},{"./settings":4}],3:[function(require,module,exports){
 "use strict";
 
 module.exports = function (keyCode) {
@@ -96,7 +147,7 @@ module.exports = function (keyCode) {
     return key;
 };
 
-},{}],3:[function(require,module,exports){
+},{}],4:[function(require,module,exports){
 'use strict';
 
 module.exports = {
@@ -108,7 +159,7 @@ module.exports = {
     }
 };
 
-},{}],4:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -138,7 +189,7 @@ function render(stage) {
     renderer.render(stage);
 }
 
-},{"./settings":3}],5:[function(require,module,exports){
+},{"./settings":4}],6:[function(require,module,exports){
 'use strict';
 
 var _stage = require('./stage');
@@ -155,7 +206,9 @@ var Tank = require('./tank'),
 
 var stage = renderer.prepareStage();
 
-var speed_display = $('#speed_display');
+var speed_display = $('#speed_display'),
+    reloading_display = $('#reloading_display'),
+    points_display = $('#points_display');
 
 var tank = Tank('t44', stage);
 
@@ -166,7 +219,6 @@ controller(tank, stage);
 stage.addChild(tank.sprite);
 
 var draw = function draw() {
-
     renderer.render(stage);
     requestAnimationFrame(draw);
 
@@ -225,7 +277,17 @@ var draw = function draw() {
 };
 
 setInterval(function () {
-    return speed_display.text(tank.speed.toFixed(2));
+    speed_display.text(tank.speed.toFixed(2));
+    points_display.text(tank.points);
+    if (tank.reloading) {
+        var time = 3000 - (new Date() - tank.shootTime);
+        time = time / 1000;
+        reloading_display.css('background-color', 'red');
+        reloading_display.text(time);
+    } else {
+        reloading_display.css('background-color', 'green');
+        reloading_display.text(3.0);
+    }
 }, 100);
 
 Zombar.setStage(stage);
@@ -243,11 +305,12 @@ setInterval(function () {
 
 draw();
 
-},{"./controller":1,"./settings":3,"./stage":4,"./tank":6,"./whizzbang.js":8,"./zombar":9}],6:[function(require,module,exports){
+},{"./controller":1,"./settings":4,"./stage":5,"./tank":7,"./whizzbang.js":9,"./zombar":10}],7:[function(require,module,exports){
 'use strict';
 
 var Tank = function Tank(tankName, stage) {
-    var Whizzbang = require('./whizzbang.js'),
+    var Whizzbang = require('./whizzbang'),
+        Explosion = require('./explosion'),
         config = require('./settings');
 
     var tankTexture = PIXI.Texture.fromImage('' + config.image_folder + tankName + '_body.png');
@@ -283,7 +346,8 @@ var Tank = function Tank(tankName, stage) {
     var back_accelerate = 0.02;
     var resistance = 0.01;
     var trunk_length = 50;
-    var whizzbang_speed = 5;
+    var whizzbang_speed = 5,
+        reloadTime = 3 * 1000;
 
     var width, height, gip, atan;
     var loaded = false;
@@ -299,12 +363,21 @@ var Tank = function Tank(tankName, stage) {
 
     var tank = {
         sprite: sprite,
+        points: 0,
         speed: 0,
+        reloading: false,
         shoot: function shoot() {
+            if (tank.reloading) {
+                return;
+            }
             var direction = sprite.rotation + thead.rotation;
 
             var x = sprite.x + Math.cos(direction) * trunk_length;
             var y = sprite.y + Math.sin(direction) * trunk_length;
+
+            var exp = new Explosion({ x: x, y: y });
+
+            stage.addChild(exp.movie);
 
             var whizzbang = new Whizzbang({
                 x: x,
@@ -312,6 +385,13 @@ var Tank = function Tank(tankName, stage) {
                 direction: direction,
                 speed: whizzbang_speed
             });
+
+            tank.reloading = true;
+            tank.shootTime = new Date();
+
+            setTimeout(function () {
+                return tank.reloading = false;
+            }, reloadTime);
 
             return whizzbang;
         },
@@ -438,6 +518,7 @@ var Tank = function Tank(tankName, stage) {
                     var b2 = -tank.a2 * corner.x + corner.y;
                     if (b1 < tank.maxb1 && b1 > tank.minb1 && b2 < tank.maxb2 && b2 > tank.minb2) {
                         enemy.dead();
+                        tank.points = tank.points + 2;
                         return;
                     }
                 }
@@ -448,17 +529,21 @@ var Tank = function Tank(tankName, stage) {
                     if (x > corners.nw.x && x < corners.ne.x && y > corners.nw.y && y < corners.sw.y) {
                         enemy.dead();
                         shell.destruct();
+                        tank.points = tank.points + 10;
                         return;
                     }
                 });
             });
         }
     };
+
+    tank.move();
+
     return tank;
 };
 module.exports = Tank;
 
-},{"./settings":3,"./whizzbang.js":8}],7:[function(require,module,exports){
+},{"./explosion":2,"./settings":4,"./whizzbang":9}],8:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -506,7 +591,7 @@ function randomPosition(width, height) {
     return { x: x, y: y, dir: dir };
 };
 
-},{}],8:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 'use strict';
 
 var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
@@ -578,7 +663,7 @@ var Whizzbang = (function () {
 
 module.exports = Whizzbang;
 
-},{"./settings":3}],9:[function(require,module,exports){
+},{"./settings":4}],10:[function(require,module,exports){
 'use strict';
 
 var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
@@ -716,4 +801,4 @@ var Zombar = (function () {
 
 module.exports = Zombar;
 
-},{"./settings":3,"./utils":7}]},{},[5]);
+},{"./settings":4,"./utils":8}]},{},[6]);

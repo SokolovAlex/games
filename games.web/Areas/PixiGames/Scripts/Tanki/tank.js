@@ -1,5 +1,6 @@
 ﻿var Tank = (tankName, stage) => {
-    var Whizzbang = require('./whizzbang.js'),
+    var Whizzbang = require('./whizzbang'),
+        Explosion = require('./explosion'),
         config = require('./settings');
 
     var tankTexture = PIXI.Texture.fromImage(`${config.image_folder}${tankName}_body.png`);
@@ -35,7 +36,8 @@
     var back_accelerate = 0.02;
     var resistance = 0.01;
     var trunk_length = 50;
-    var whizzbang_speed = 5;
+    var whizzbang_speed = 5,
+        reloadTime = 3 * 1000;
 
     var width, height, gip, atan;
     var loaded = false;
@@ -51,12 +53,21 @@
 
     var tank = {
         sprite: sprite,
+        points: 0,
         speed: 0,
+        reloading: false,
         shoot: () => {
+            if (tank.reloading) {
+                return;
+            }
             var direction = sprite.rotation + thead.rotation;
 
             var x = sprite.x + Math.cos(direction) * trunk_length;
             var y = sprite.y + Math.sin(direction) * trunk_length;
+
+            var exp = new Explosion({ x: x, y: y });
+
+            stage.addChild(exp.movie);
 
             var whizzbang = new Whizzbang({
                 x: x,
@@ -64,6 +75,11 @@
                 direction: direction,
                 speed: whizzbang_speed
             });
+
+            tank.reloading = true;
+            tank.shootTime = new Date();
+
+            setTimeout(() => tank.reloading = false, reloadTime);
 
             return whizzbang;
         },
@@ -203,6 +219,7 @@
                     if (b1 < tank.maxb1 && b1 > tank.minb1
                         && b2 < tank.maxb2 && b2 > tank.minb2) {
                         enemy.dead();
+                        tank.points = tank.points + 2;
                         return;
                     }
                 }
@@ -214,12 +231,16 @@
                         && y > corners.nw.y && y < corners.sw.y) {
                         enemy.dead();
                         shell.destruct();
+                        tank.points = tank.points + 10;
                         return;
                     }
                 });
             });
         }
     };
+
+    tank.move();
+
     return tank;
 }
 module.exports = Tank;
