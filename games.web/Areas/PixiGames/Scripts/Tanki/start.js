@@ -8,12 +8,7 @@ import * as renderer from "./stage";
 
 var stage = renderer.prepareStage();
 
-
-function state_play(){
-    
-}
- 
-var draw = () => {
+function state_play() {
     renderer.render(stage);
     requestAnimationFrame(draw);
 
@@ -27,7 +22,18 @@ var draw = () => {
     tank.checkKill(stage.zombies, stage.shells);
 }
 
-function startGame() {    
+function state_menu(){
+    renderer.render(stage);
+    requestAnimationFrame(draw);
+}
+
+renderer.prepareMenu(stage);
+
+var draw = state_menu;
+
+draw();
+
+function startGame() {
     Zombar.setStage(stage);
     Whizzbang.setStage(stage);
 
@@ -44,6 +50,8 @@ function startGame() {
 
     stage.shells = [];
     stage.zombies = [];
+
+    renderer.render(stage);
 
     var startTime = new Date();
     setInterval(() => {
@@ -64,17 +72,14 @@ function startGame() {
             reloading_display.text(1.0);
         }
     }, 100);
+
+    setInterval(() => {
+        var newZombar = new Zombar();
+        stage.zombies.push(newZombar);
+        stage.addChild(newZombar.sprite);
+    }, 300);
 }
-
-
-setInterval(() => {
-    var newZombar = new Zombar();
-    stage.zombies.push(newZombar);
-    stage.addChild(newZombar.sprite);
-}, 300);
 
 //var newZombar = new Zombar({x: 300,y:300,speed:0.1,dir:-Math.PI/2});
 //stage.zombies.push(newZombar);
 //stage.addChild(newZombar.sprite);
-
-draw();

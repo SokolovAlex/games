@@ -166,12 +166,12 @@ Object.defineProperty(exports, "__esModule", {
     value: true
 });
 exports.prepareStage = prepareStage;
+exports.prepareMenu = prepareMenu;
 exports.render = render;
 var renderer;
+var config = require('./settings');
 
 function prepareStage() {
-    var config = require('./settings');
-
     renderer = new PIXI.CanvasRenderer(config.stage_size.width, config.stage_size.height, { backgroundColor: 0x603a00 });
     $('.stage')[0].appendChild(renderer.view);
     var stage = new PIXI.Stage();
@@ -183,6 +183,45 @@ function prepareStage() {
     stage.addChild(stage_texture);
 
     return stage;
+}
+
+function prepareMenu(stage) {
+    var menu_texture = PIXI.Sprite.fromImage(config.image_folder + 'menu.jpg');
+    menu_texture.width = config.stage_size.width;
+    menu_texture.height = config.stage_size.height;
+
+    var startBtn = PIXI.Sprite.fromImage(config.image_folder + 'start.png');
+    startBtn.x = 550;
+    startBtn.y = 350;
+
+    stage.addChild(menu_texture);
+    stage.addChild(startBtn);
+
+    var tankTexture = PIXI.Texture.fromImage(config.image_folder + 't44_body.png');
+    var tankHeadTexture = PIXI.Texture.fromImage(config.image_folder + 't44_head.png');
+
+    var tbody = new PIXI.Sprite(tankTexture);
+    var thead = new PIXI.Sprite(tankHeadTexture);
+    var sprite = new PIXI.Container();
+
+    sprite.y = 400;
+    sprite.x = 450;
+
+    tbody.anchor.x = 0.5;
+    tbody.anchor.y = 0.5;
+    thead.anchor.x = 0.5;
+    thead.anchor.y = 0.5;
+
+    var ratio = 0.2;
+    sprite.scale.x = ratio;
+    sprite.scale.y = ratio;
+
+    thead.pivot.set(-50, 0);
+
+    sprite.addChild(tbody);
+    sprite.addChild(thead);
+
+    stage.addChild(sprite);
 }
 
 function render(stage) {
@@ -206,9 +245,7 @@ var Tank = require('./tank'),
 
 var stage = renderer.prepareStage();
 
-function state_play() {}
-
-var draw = function draw() {
+function state_play() {
     renderer.render(stage);
     requestAnimationFrame(draw);
 
@@ -264,7 +301,18 @@ var draw = function draw() {
 
     tank.move();
     tank.checkKill(stage.zombies, stage.shells);
-};
+}
+
+function state_menu() {
+    renderer.render(stage);
+    requestAnimationFrame(draw);
+}
+
+renderer.prepareMenu(stage);
+
+var draw = state_menu;
+
+draw();
 
 function startGame() {
     Zombar.setStage(stage);
@@ -283,6 +331,8 @@ function startGame() {
 
     stage.shells = [];
     stage.zombies = [];
+
+    renderer.render(stage);
 
     var startTime = new Date();
     setInterval(function () {
@@ -303,19 +353,17 @@ function startGame() {
             reloading_display.text(1.0);
         }
     }, 100);
-}
 
-setInterval(function () {
-    var newZombar = new Zombar();
-    stage.zombies.push(newZombar);
-    stage.addChild(newZombar.sprite);
-}, 300);
+    setInterval(function () {
+        var newZombar = new Zombar();
+        stage.zombies.push(newZombar);
+        stage.addChild(newZombar.sprite);
+    }, 300);
+}
 
 //var newZombar = new Zombar({x: 300,y:300,speed:0.1,dir:-Math.PI/2});
 //stage.zombies.push(newZombar);
 //stage.addChild(newZombar.sprite);
-
-draw();
 
 },{"./controller":1,"./settings":4,"./stage":5,"./tank":7,"./whizzbang.js":9,"./zombar":10}],7:[function(require,module,exports){
 'use strict';
@@ -388,7 +436,6 @@ var Tank = function Tank(tankName, stage) {
             var y = sprite.y + Math.sin(direction) * trunk_length;
 
             var exp = new Explosion({ x: x, y: y });
-
             stage.addChild(exp.movie);
 
             var whizzbang = new Whizzbang({
@@ -541,6 +588,10 @@ var Tank = function Tank(tankName, stage) {
                     if (x > corners.nw.x && x < corners.ne.x && y > corners.nw.y && y < corners.sw.y) {
                         enemy.dead();
                         shell.destruct();
+
+                        var exp = new Explosion({ x: x, y: y });
+                        stage.addChild(exp.movie);
+
                         tank.points = tank.points + 10;
                         return;
                     }

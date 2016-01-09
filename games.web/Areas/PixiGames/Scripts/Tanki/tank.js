@@ -66,7 +66,6 @@
             var y = sprite.y + Math.sin(direction) * trunk_length;
 
             var exp = new Explosion({ x: x, y: y });
-
             stage.addChild(exp.movie);
 
             var whizzbang = new Whizzbang({
@@ -231,6 +230,10 @@
                         && y > corners.nw.y && y < corners.sw.y) {
                         enemy.dead();
                         shell.destruct();
+
+                        var exp = new Explosion({ x: x, y: y });
+                        stage.addChild(exp.movie);
+
                         tank.points = tank.points + 10;
                         return;
                     }
