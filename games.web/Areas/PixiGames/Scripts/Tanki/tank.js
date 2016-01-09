@@ -37,7 +37,7 @@
     var resistance = 0.01;
     var trunk_length = 50;
     var whizzbang_speed = 5,
-        reloadTime = 3 * 1000;
+        reloadTime = 1000;
 
     var width, height, gip, atan;
     var loaded = false;

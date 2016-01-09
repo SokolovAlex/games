@@ -206,17 +206,7 @@ var Tank = require('./tank'),
 
 var stage = renderer.prepareStage();
 
-var speed_display = $('#speed_display'),
-    reloading_display = $('#reloading_display'),
-    points_display = $('#points_display');
-
-var tank = Tank('t44', stage);
-
-stage.shells = [];
-stage.zombies = [];
-controller(tank, stage);
-
-stage.addChild(tank.sprite);
+function state_play() {}
 
 var draw = function draw() {
     renderer.render(stage);
@@ -276,22 +266,44 @@ var draw = function draw() {
     tank.checkKill(stage.zombies, stage.shells);
 };
 
-setInterval(function () {
-    speed_display.text(tank.speed.toFixed(2));
-    points_display.text(tank.points);
-    if (tank.reloading) {
-        var time = 3000 - (new Date() - tank.shootTime);
-        time = time / 1000;
-        reloading_display.css('background-color', 'red');
-        reloading_display.text(time);
-    } else {
-        reloading_display.css('background-color', 'green');
-        reloading_display.text(3.0);
-    }
-}, 100);
+function startGame() {
+    Zombar.setStage(stage);
+    Whizzbang.setStage(stage);
 
-Zombar.setStage(stage);
-Whizzbang.setStage(stage);
+    var speed_display = $('#speed_display'),
+        reloading_display = $('#reloading_display'),
+        time_display = $('#time_display'),
+        points_display = $('#points_display');
+
+    var tank = Tank('t44', stage);
+
+    controller(tank, stage);
+
+    stage.addChild(tank.sprite);
+
+    stage.shells = [];
+    stage.zombies = [];
+
+    var startTime = new Date();
+    setInterval(function () {
+        speed_display.text(tank.speed.toFixed(2));
+        points_display.text(tank.points);
+        var now = new Date();
+
+        var timeleft = 60 * 1000 - (now - startTime);
+        time_display.text(timeleft / 1000);
+
+        if (tank.reloading) {
+            var time = 1000 - (now - tank.shootTime);
+            time = time / 1000;
+            reloading_display.css('background-color', 'red');
+            reloading_display.text(time);
+        } else {
+            reloading_display.css('background-color', 'green');
+            reloading_display.text(1.0);
+        }
+    }, 100);
+}
 
 setInterval(function () {
     var newZombar = new Zombar();
@@ -347,7 +359,7 @@ var Tank = function Tank(tankName, stage) {
     var resistance = 0.01;
     var trunk_length = 50;
     var whizzbang_speed = 5,
-        reloadTime = 3 * 1000;
+        reloadTime = 1000;
 
     var width, height, gip, atan;
     var loaded = false;
