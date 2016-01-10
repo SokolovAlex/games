@@ -43,6 +43,7 @@ class Whizzbang {
         var self = this;
         stage.removeChild(this.sprite);
         stage.shells = _.reject(stage.shells, (z) => z.id == self.id);
+        stage.removeChild(this.sprite);
     }
 }
 

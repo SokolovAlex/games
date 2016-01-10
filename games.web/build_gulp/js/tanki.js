@@ -185,12 +185,33 @@ function prepareStage() {
     return stage;
 }
 
-function prepareMenu(stage) {
+function prepareMenu(stage, onStart) {
     var menu_texture = PIXI.Sprite.fromImage(config.image_folder + 'menu.jpg');
     menu_texture.width = config.stage_size.width;
     menu_texture.height = config.stage_size.height;
 
-    var startBtn = PIXI.Sprite.fromImage(config.image_folder + 'start.png');
+    var btnTexture = PIXI.Texture.fromImage(config.image_folder + 'start.png');
+    var pressedTexture = PIXI.Texture.fromImage(config.image_folder + 'start_pressed.png');
+
+    var startBtn = new PIXI.Sprite(btnTexture);
+    startBtn.interactive = true;
+
+    startBtn.on('mouseover', function () {
+        return startBtn.texture = pressedTexture;
+    });
+
+    startBtn.on('mouseout', function () {
+        return startBtn.texture = btnTexture;
+    });
+
+    startBtn.on('click', function () {
+        console.log('click');
+        stage.removeChild(startBtn);
+        stage.removeChild(menu_texture);
+        stage.removeChild(sprite);
+        onStart();
+    });
+
     startBtn.x = 550;
     startBtn.y = 350;
 
@@ -244,6 +265,8 @@ var Tank = require('./tank'),
     config = require('./settings');
 
 var stage = renderer.prepareStage();
+
+var tank = Tank('t44', stage);
 
 function state_play() {
     renderer.render(stage);
@@ -308,7 +331,7 @@ function state_menu() {
     requestAnimationFrame(draw);
 }
 
-renderer.prepareMenu(stage);
+renderer.prepareMenu(stage, startGame);
 
 var draw = state_menu;
 
@@ -322,8 +345,6 @@ function startGame() {
         reloading_display = $('#reloading_display'),
         time_display = $('#time_display'),
         points_display = $('#points_display');
-
-    var tank = Tank('t44', stage);
 
     controller(tank, stage);
 
@@ -359,6 +380,8 @@ function startGame() {
         stage.zombies.push(newZombar);
         stage.addChild(newZombar.sprite);
     }, 300);
+
+    draw = state_play;
 }
 
 //var newZombar = new Zombar({x: 300,y:300,speed:0.1,dir:-Math.PI/2});
@@ -718,6 +741,7 @@ var Whizzbang = (function () {
             stage.shells = _.reject(stage.shells, function (z) {
                 return z.id == self.id;
             });
+            stage.removeChild(this.sprite);
         }
     }]);
 
@@ -806,6 +830,7 @@ var Zombar = (function () {
 
             if (this.sprite.x > w + precision || this.sprite.x < -precision || this.sprite.y > h + precision || this.sprite.y < -precision) {
                 this.dead();
+                stage.removeChild(this.sprite);
             }
         }
     }, {

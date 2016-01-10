@@ -8,6 +8,8 @@ import * as renderer from "./stage";
 
 var stage = renderer.prepareStage();
 
+var tank = Tank('t44', stage);
+
 function state_play() {
     renderer.render(stage);
     requestAnimationFrame(draw);
@@ -27,7 +29,7 @@ function state_menu(){
     requestAnimationFrame(draw);
 }
 
-renderer.prepareMenu(stage);
+renderer.prepareMenu(stage, startGame);
 
 var draw = state_menu;
 
@@ -41,8 +43,6 @@ function startGame() {
     reloading_display = $('#reloading_display'),
     time_display = $('#time_display'),
     points_display = $('#points_display');
-
-    var tank = Tank('t44', stage);
 
     controller(tank, stage);
 
@@ -78,6 +78,8 @@ function startGame() {
         stage.zombies.push(newZombar);
         stage.addChild(newZombar.sprite);
     }, 300);
+
+    draw = state_play;
 }
 
 //var newZombar = new Zombar({x: 300,y:300,speed:0.1,dir:-Math.PI/2});

@@ -58,6 +58,7 @@ class Zombar {
         if(this.sprite.x > w + precision || this.sprite.x < -precision
             || this.sprite.y > h + precision || this.sprite.y < -precision) {
             this.dead();
+            stage.removeChild(this.sprite);
         }
     }
     dead() {

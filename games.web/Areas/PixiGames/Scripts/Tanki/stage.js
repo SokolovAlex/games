@@ -15,12 +15,28 @@ export function prepareStage() {
     return stage;
 }
 
-export function prepareMenu(stage) {
+export function prepareMenu(stage, onStart) {
     var menu_texture = PIXI.Sprite.fromImage(`${config.image_folder}menu.jpg`);
     menu_texture.width = config.stage_size.width;
     menu_texture.height = config.stage_size.height;
 
-    var startBtn = PIXI.Sprite.fromImage(`${config.image_folder}start.png`);
+    var btnTexture = PIXI.Texture.fromImage(`${config.image_folder}start.png`);
+    var pressedTexture = PIXI.Texture.fromImage(`${config.image_folder}start_pressed.png`);
+
+    var startBtn = new PIXI.Sprite(btnTexture);
+    startBtn.interactive = true;
+
+    startBtn.on('mouseover', () => startBtn.texture = pressedTexture);
+
+    startBtn.on('mouseout', () => startBtn.texture = btnTexture);
+
+    startBtn.on('click', () => {
+        stage.removeChild(startBtn);
+        stage.removeChild(menu_texture);
+        stage.removeChild(sprite);
+        onStart();
+    });
+
     startBtn.x = 550;
     startBtn.y = 350;
 
