@@ -58,7 +58,6 @@ class Zombar {
         if(this.sprite.x > w + precision || this.sprite.x < -precision
             || this.sprite.y > h + precision || this.sprite.y < -precision) {
             this.dead();
-            stage.removeChild(this.sprite);
         }
     }
     dead() {
@@ -66,6 +65,7 @@ class Zombar {
         this.sprite.texture = deadTexture;
         this.sprite.z = -1;
         stage.zombies = _.reject(stage.zombies, (z) => z.id == self.id);
+        stage.removeChild(this.sprite);
     }
     getCorners() {
         var x = this.sprite.x,

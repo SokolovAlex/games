@@ -12,7 +12,7 @@ var gulp = require("gulp"),
 	source = require('vinyl-source-stream'),
 	size = require('gulp-size'),
     notify = require("gulp-notify"),
-    uglify = require("gulp-uglify");
+    uglify = require("gulp-uglify")
 
 var tankiDest = ['build_gulp/js/tanki.js'];
 var watch_src = ['Scripts/**/*.js'];
@@ -63,3 +63,20 @@ gulp.task('tanki_js', () => {
 });
 
 gulp.task("tanki", ['tanki_js', 'tanki_watch']);
+
+var webserver = require('gulp-webserver');
+
+gulp.task('demo', function() {
+	gulp.start("tanki_js");
+
+	gulp.src(['./build_gulp/js/*', './Scripts/pixi_build/pixi.min.js'])
+		.pipe(gulp.dest("./demos/js/"));
+
+	gulp.src('./')
+		.pipe(webserver({
+			livereload: true,
+			port: 1111,
+			directoryListing: true,
+			open: true
+		}));
+});

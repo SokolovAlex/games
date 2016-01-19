@@ -8,6 +8,6 @@ npm i -g gulp
 собрать скрипт с танками gulp tanki
 
 demo танков 
-1)npm i -g node-static
-2)
-3)
+1) cd games.web
+2) gulp demo
+3) http://localhost:1111/demos/tanki.html
