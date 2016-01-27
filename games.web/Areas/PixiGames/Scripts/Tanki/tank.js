@@ -217,7 +217,7 @@
                     let b2 = -tank.a2 * corner.x + corner.y;
                     if (b1 < tank.maxb1 && b1 > tank.minb1
                         && b2 < tank.maxb2 && b2 > tank.minb2) {
-                        enemy.dead();
+                        enemy.dead(true);
                         tank.points = tank.points + 2;
                         return;
                     }
@@ -228,7 +228,7 @@
                     var y = shell.sprite.y;
                     if (x > corners.nw.x && x < corners.ne.x
                         && y > corners.nw.y && y < corners.sw.y) {
-                        enemy.dead();
+                        enemy.dead(true);
                         shell.destruct();
 
                         var exp = new Explosion({ x: x, y: y });

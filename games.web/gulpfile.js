@@ -5,7 +5,6 @@ var gulp = require("gulp"),
     rimraf = require("gulp-rimraf"),
     concat = require("gulp-concat"),
     cssmin = require("gulp-cssmin"),
-    gutil = require('gulp-util'),
     stream = require('event-stream'),
 	browserify = require('browserify'),
 	babelify = require('babelify'),
@@ -38,7 +37,7 @@ gulp.task("tanki_watch", function (cb) {
 //        .pipe(gulp.dest('build_gulp/js'));
 //});
 
-gulp.task('tanki_js', () => {
+gulp.task('tanki_js', function() {
     const modules = browserify('Areas/PixiGames/Scripts/Tanki/start.js')
 		.transform(babelify, { presets: ["es2015"] })
 		.bundle()

@@ -60,12 +60,14 @@ class Zombar {
             this.dead();
         }
     }
-    dead() {
+    dead(killed) {
         var self = this;
         this.sprite.texture = deadTexture;
         this.sprite.z = -1;
         stage.zombies = _.reject(stage.zombies, (z) => z.id == self.id);
-        stage.removeChild(this.sprite);
+		if (!killed) {
+			stage.removeChild(this.sprite);
+		}
     }
     getCorners() {
         var x = this.sprite.x,
